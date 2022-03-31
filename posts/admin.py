@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.db import models
+from django_json_widget.widgets import JSONEditorWidget
 
 from posts.models import Author, Category, Image, Post, Tag
 
@@ -27,11 +29,15 @@ class ImagesInline(admin.TabularInline):
 
 
 class PostAdmin(admin.ModelAdmin):
-    fields = ['slug', 'old_link', 'title', 'content', 'excerpt',
+    fields = ['slug', 'old_link', 'title', 'body', 'excerpt',
               'date', 'author', 'categories', 'tags']
     list_display = ['slug', 'title', 'author']
     list_filter = ['categories', 'tags']
     search_fields = ['slug', 'old_link', 'title']
+
+    formfield_overrides = {
+        models.JSONField: {'widget': JSONEditorWidget},
+    }
 
     inlines = [ImagesInline]
 

@@ -1,5 +1,4 @@
 from django.db import models
-from ckeditor.fields import RichTextField
 
 
 class Category(models.Model):
@@ -38,8 +37,9 @@ class Post(models.Model):
 
     title = models.CharField(
         max_length=200, default='', blank=False, null=False)
-    content = RichTextField(default="")
-    excerpt = RichTextField(default="")
+    body = models.JSONField()
+    excerpt = models.CharField(
+        max_length=5000, default='', blank=False, null=False)
 
     date = models.DateTimeField(blank=False, null=False)
 
