@@ -2,6 +2,7 @@ import requests
 import json
 import environ
 import os
+import time
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,14 +44,14 @@ def uploadImage(link, alt):
         return json.loads(response.text)
 
 
-def processImage(imageId):
+def processImage(imageId, version):
     url = "https://api.contentful.com/spaces/{}/environments/{}/assets/{}/files/en-US/process".format(
         env('CONTENTFUL_SPACE_ID'), env('CONTENTFUL_ENVIRONMENT_ID'), imageId)
 
     payload = {}
 
     headers = {
-        'X-Contentful-Version': '1',
+        'X-Contentful-Version': str(version),
         'Authorization': 'Bearer {}'.format(env('CONTENTFUL_MANAGEMENT_TOKEN')),
     }
 
@@ -60,14 +61,14 @@ def processImage(imageId):
         print("Image Process Error. Image: {}".format(imageId))
 
 
-def publishImage(imageId):
+def publishImage(imageId, version):
     url = "https://api.contentful.com/spaces/{}/environments/{}/assets/{}/published".format(
         env('CONTENTFUL_SPACE_ID'), env('CONTENTFUL_ENVIRONMENT_ID'), imageId)
 
     payload = {}
 
     headers = {
-        'X-Contentful-Version': '2',
+        'X-Contentful-Version': str(version),
         'Authorization': 'Bearer {}'.format(env('CONTENTFUL_MANAGEMENT_TOKEN')),
     }
 
@@ -96,13 +97,15 @@ def publishEntry(entryId):
 
 def contentfulImage(link, alt):
     upload = uploadImage(link, alt)
-    if upload:
-        imageId = upload['sys']['id']
-    else:
+    if upload == None:
         return ""
 
-    processImage(imageId)
-    publishImage(imageId)
+    imageId = upload['sys']['id']
+    version = upload['sys']['version']
+
+    processImage(imageId, version)
+    time.sleep(1)
+    publishImage(imageId, version + 1)
 
     return imageId
 

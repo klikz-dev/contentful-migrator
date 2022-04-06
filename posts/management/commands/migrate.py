@@ -1,9 +1,10 @@
-import json
 from django.core.management.base import BaseCommand
+
 import requests
+import json
 from bs4 import BeautifulSoup
 
-from library.common import contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAuthor, contentfulCategory, contentfulTag
+from library.contentful import contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAuthor, contentfulCategory, contentfulTag
 
 
 class Command(BaseCommand):
@@ -606,13 +607,9 @@ class Command(BaseCommand):
         return soup.get_text().strip()
 
     def main(self):
-        # for page in range(1, 40):
-        # postsRes = requests.request(
-        #     "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?per_page=10&page={}".format(page), headers={}, data={})
-
-        if 1 == 1:
+        for page in range(1, 40):
             postsRes = requests.request(
-                "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?slug=best-pocket-pistols", headers={}, data={})
+                "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?per_page=10&page={}".format(page), headers={}, data={})
 
             posts = json.loads(postsRes.text)
 
