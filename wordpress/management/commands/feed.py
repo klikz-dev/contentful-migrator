@@ -45,6 +45,12 @@ class Command(BaseCommand):
                 tags = ", ".join(str(t) for t in post['tags'])
                 featured_media = post['featured_media']
 
+                try:
+                    Post.objects.get(id=id)
+                    continue
+                except Post.DoesNotExist:
+                    pass
+
                 Post.objects.create(
                     id=id,
                     title=title,
@@ -73,6 +79,12 @@ class Command(BaseCommand):
                 slug = author['slug']
                 description = author['description']
 
+                try:
+                    Author.objects.get(id=id)
+                    continue
+                except Author.DoesNotExist:
+                    pass
+
                 Author.objects.create(
                     id=id,
                     name=name,
@@ -94,6 +106,12 @@ class Command(BaseCommand):
                 name = category['name']
                 slug = category['slug']
                 description = category['description']
+
+                try:
+                    Category.objects.get(id=id)
+                    continue
+                except Category.DoesNotExist:
+                    pass
 
                 Category.objects.create(
                     id=id,
@@ -117,6 +135,12 @@ class Command(BaseCommand):
                 slug = tag['slug']
                 description = tag['description']
 
+                try:
+                    Tag.objects.get(id=id)
+                    continue
+                except Tag.DoesNotExist:
+                    pass
+
                 Tag.objects.create(
                     id=id,
                     name=name,
@@ -139,6 +163,12 @@ class Command(BaseCommand):
                 slug = media['slug']
                 link = media['source_url']
                 alt = media['alt_text']
+
+                try:
+                    Media.objects.get(id=id)
+                    continue
+                except Media.DoesNotExist:
+                    pass
 
                 Media.objects.create(
                     id=id,
