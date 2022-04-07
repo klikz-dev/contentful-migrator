@@ -241,27 +241,31 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'a' and element.has_attr('class') and 'elementor-cta' in element['class']:
-                ctaTitle = element.select(
-                    '.elementor-cta__title')[0].get_text().strip()
+                try:
+                    ctaTitle = element.select(
+                        '.elementor-cta__title')[0].get_text().strip()
 
-                ctaLink = element.get('href').replace(
-                    'https://www.americanfirearms.org', '')
+                    ctaLink = element.get('href').replace(
+                        'https://www.americanfirearms.org', '')
 
-                ctaImage = element.select('.elementor-cta__bg')[0]['style'].replace(
-                    'background-image: url(', '').replace(');', '')
-                ctaImageId = contentfulImage(ctaImage, ctaTitle)
+                    ctaImage = element.select('.elementor-cta__bg')[0]['style'].replace(
+                        'background-image: url(', '').replace(');', '')
+                    ctaImageId = contentfulImage(ctaImage, ctaTitle)
 
-                if ctaImageId == "":
+                    if ctaImageId == "":
+                        continue
+
+                    ctaButtonText = element.select(
+                        '.elementor-cta__button')[0].get_text().strip()
+
+                    ctaPrice = element.select(
+                        '.elementor-ribbon-inner')[0].get_text().strip().replace('$', '').replace(',', '').replace('\u200e', '')
+
+                    cta = contentfulCTA(
+                        ctaTitle, ctaLink, ctaImageId, ctaButtonText, ctaPrice)
+                except Exception as e:
+                    print(e)
                     continue
-
-                ctaButtonText = element.select(
-                    '.elementor-cta__button')[0].get_text().strip()
-
-                ctaPrice = element.select(
-                    '.elementor-ribbon-inner')[0].get_text().strip().replace('$', '').replace(',', '').replace('\u200e', '')
-
-                cta = contentfulCTA(
-                    ctaTitle, ctaLink, ctaImageId, ctaButtonText, ctaPrice)
 
                 content = {
                     "nodeType": "embedded-entry-block",
@@ -281,17 +285,22 @@ class Command(BaseCommand):
 
             if element.name == 'div' and element.has_attr('class'):
                 if 'elementor-widget-image' in element['class']:
-                    image = element.select('img')[0]['data-src']
+                    try:
+                        image = element.select('img')[0]['data-src']
 
-                    alt = ""
-                    if len(element.select('figcaption')) > 0:
-                        alt = element.select('figcaption')[
-                            0].get_text().strip()
-                    else:
-                        alt = element.select('img')[0]['alt'].strip()
+                        alt = ""
+                        if len(element.select('figcaption')) > 0:
+                            alt = element.select('figcaption')[
+                                0].get_text().strip()
+                        else:
+                            alt = element.select('img')[0]['alt'].strip()
 
-                    imageId = contentfulImage(image, alt)
-                    if imageId == "":
+                        imageId = contentfulImage(image, alt)
+                        if imageId == "":
+                            continue
+
+                    except Exception as e:
+                        print(e)
                         continue
 
                     content = {
@@ -311,25 +320,30 @@ class Command(BaseCommand):
                     contents.append(content)
 
                 elif 'elementor-row' in element['class']:
-                    ratings = element.select(
-                        '.elementor-star-rating__wrapper')
-                    if len(ratings) == 0:
+                    try:
+                        ratings = element.select(
+                            '.elementor-star-rating__wrapper')
+                        if len(ratings) == 0:
+                            continue
+
+                        tableData = []
+                        tableData.append(['Performance', 'Score'])
+
+                        for rating in ratings:
+                            performance = rating.select(
+                                '.elementor-star-rating__title')[0].get_text().replace(':', '').strip()
+
+                            score = rating.select(
+                                '.elementor-star-rating')[0]['title']
+
+                            tableData.append([performance, score])
+
+                        cardName = latestH3[3:].strip()
+                        scorecard = contentfulScorecard(cardName, tableData)
+
+                    except Exception as e:
+                        print(e)
                         continue
-
-                    tableData = []
-                    tableData.append(['Performance', 'Score'])
-
-                    for rating in ratings:
-                        performance = rating.select(
-                            '.elementor-star-rating__title')[0].get_text().replace(':', '').strip()
-
-                        score = rating.select(
-                            '.elementor-star-rating')[0]['title']
-
-                        tableData.append([performance, score])
-
-                    cardName = latestH3[3:].strip()
-                    scorecard = contentfulScorecard(cardName, tableData)
 
                     content = {
                         "nodeType": "embedded-entry-block",
@@ -348,28 +362,38 @@ class Command(BaseCommand):
                     contents.append(content)
 
                 elif 'elementor-widget-video' in element['class']:
-                    video = json.loads(element['data-settings'])
-                    embed = contentfulEmbed(video['youtube_url'])
+                    try:
+                        video = json.loads(element['data-settings'])
+                        embed = contentfulEmbed(video['youtube_url'])
 
-                    content = {
-                        "nodeType": "embedded-entry-block",
-                        "content": [],
-                        "data": {
-                            "target": {
-                                "sys": {
-                                    "id": embed,
-                                    "type": "Link",
-                                    "linkType": "Entry"
+                        content = {
+                            "nodeType": "embedded-entry-block",
+                            "content": [],
+                            "data": {
+                                "target": {
+                                    "sys": {
+                                        "id": embed,
+                                        "type": "Link",
+                                        "linkType": "Entry"
+                                    }
                                 }
                             }
                         }
-                    }
+
+                    except Exception as e:
+                        print(e)
+                        continue
 
                     contents.append(content)
 
                 elif 'aawp-product' in element['class']:
-                    productId = element['data-aawp-product-id']
-                    affiliate = contentfulAffiliate(productId)
+                    try:
+                        productId = element['data-aawp-product-id']
+                        affiliate = contentfulAffiliate(productId)
+
+                    except Exception as e:
+                        print(e)
+                        continue
 
                     content = {
                         "nodeType": "embedded-entry-block",
@@ -631,23 +655,19 @@ class Command(BaseCommand):
             postsRes = requests.request(
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?per_page=10&page={}".format(page), headers={}, data={})
 
-        # if 1 == 1:
-        #     postsRes = requests.request(
-        #         "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?slug={}".format('best-coyote-hunting-scopes'), headers={}, data={})
-
             posts = json.loads(postsRes.text)
 
             for post in posts:
                 try:
                     print("--------------------------------------------------------")
+
                     # Main
                     title = post['title']['rendered'].replace(
                         '&amp;', '&').strip()
                     slug = post['slug']
                     body = self.convertHTMLToContentfulJson(
                         post['content']['rendered'])
-                    # excerpt = self.cleanExcerpt(post['excerpt']['rendered'])
-                    excerpt = post['excerpt']['rendered']
+                    excerpt = self.cleanExcerpt(post['excerpt']['rendered'])
                     date = post['date']
 
                     # Thumbnail
@@ -731,8 +751,9 @@ class Command(BaseCommand):
                             }
                         })
 
-                    contentfulPost(title, slug, body, excerpt, date,
-                                   thumbnail, author, categories, tags)
+                    # Create Post
+                    contentfulPost(title, slug, body, excerpt,
+                                   date, thumbnail, author, categories, tags)
 
                     print("--------------------------------------------------------")
 
