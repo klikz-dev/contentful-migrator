@@ -651,18 +651,23 @@ class Command(BaseCommand):
         return soup.get_text().strip()
 
     def main(self):
+
         print('Collecting All posts data...')
+
         allPosts = []
         for page in range(1, 5):
+            print("Page {}".format(page))
+
             postsRes = requests.request(
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?per_page=100&page={}".format(page), headers={}, data={})
 
             posts = json.loads(postsRes.text)
 
             for post in posts:
-                allPosts.push(post)
+                allPosts.append(post)
 
         print('Uploading posts to Contentful...')
+
         for post in allPosts:
             try:
                 print("--------------------------------------------------------")
@@ -759,7 +764,7 @@ class Command(BaseCommand):
 
                 # Create Post
                 contentfulPost(title, slug, body, excerpt,
-                                date, thumbnail, author, categories, tags)
+                               date, thumbnail, author, categories, tags)
 
                 print("--------------------------------------------------------")
 
