@@ -92,7 +92,7 @@ def publishEntry(entryId):
     response = requests.request("PUT", url, headers=headers, data=payload)
 
     if response.status_code != 200:
-        print("Image Publish Error. Image: {}".format(entryId))
+        print("Post Publish Error. Image: {}".format(entryId))
 
 
 def contentfulImage(link, alt):
@@ -104,7 +104,6 @@ def contentfulImage(link, alt):
     version = upload['sys']['version']
 
     processImage(imageId, version)
-    time.sleep(1)
     publishImage(imageId, version + 1)
 
     return imageId
@@ -267,6 +266,38 @@ def contentfulEmbed(src):
 
         publishEntry(embed['sys']['id'])
         return embed['sys']['id']
+
+
+def contentfulAffiliate(productId):
+    url = "https://api.contentful.com/spaces/{}/environments/{}/entries".format(
+        env('CONTENTFUL_SPACE_ID'), env('CONTENTFUL_ENVIRONMENT_ID'))
+
+    payload = json.dumps({
+        "fields": {
+            "productId": {
+                "en-US": productId
+            }
+        }
+    })
+
+    headers = {
+        'X-Contentful-Content-Type': 'amazonAffiliate',
+        'Authorization': 'Bearer {}'.format(env('CONTENTFUL_MANAGEMENT_TOKEN')),
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    if response.status_code != 201:
+        print("Creating Amazon Affiliate failed")
+        return ""
+
+    else:
+        print("Amazon Affiliate creation successful. productId: {}".format(productId))
+        amazonAffiliate = json.loads(response.text)
+
+        publishEntry(amazonAffiliate['sys']['id'])
+        return amazonAffiliate['sys']['id']
 
 
 def contentfulAuthor(name, slug, description):
@@ -474,5 +505,6 @@ def contentfulPost(title, slug, body, excerpt, date, thumbnail, author, categori
         print("Post creation successful. Title: {}".format(title))
         post = json.loads(response.text)
 
+        time.sleep(1)
         publishEntry(post['sys']['id'])
         return post['sys']['id']

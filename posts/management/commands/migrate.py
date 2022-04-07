@@ -4,7 +4,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 
-from library.contentful import contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAuthor, contentfulCategory, contentfulTag
+from library.contentful import contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAffiliate, contentfulAuthor, contentfulCategory, contentfulTag
 
 
 class Command(BaseCommand):
@@ -367,6 +367,26 @@ class Command(BaseCommand):
 
                     contents.append(content)
 
+                elif 'aawp-product' in element['class']:
+                    productId = element['data-aawp-product-id']
+                    affiliate = contentfulAffiliate(productId)
+
+                    content = {
+                        "nodeType": "embedded-entry-block",
+                        "content": [],
+                        "data": {
+                            "target": {
+                                "sys": {
+                                    "id": affiliate,
+                                    "type": "Link",
+                                    "linkType": "Entry"
+                                }
+                            }
+                        }
+                    }
+
+                    contents.append(content)
+
                 else:
                     continue
 
@@ -611,100 +631,111 @@ class Command(BaseCommand):
             postsRes = requests.request(
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?per_page=10&page={}".format(page), headers={}, data={})
 
+        # if 1 == 1:
+        #     postsRes = requests.request(
+        #         "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?slug={}".format('best-coyote-hunting-scopes'), headers={}, data={})
+
             posts = json.loads(postsRes.text)
 
             for post in posts:
-                print("--------------------------------------------------------")
-                # Main
-                title = post['title']['rendered'].replace('&amp;', '&').strip()
-                slug = post['slug']
-                body = self.convertHTMLToContentfulJson(
-                    post['content']['rendered'])
-                # excerpt = self.cleanExcerpt(post['excerpt']['rendered'])
-                excerpt = post['excerpt']['rendered']
-                date = post['date']
+                try:
+                    print("--------------------------------------------------------")
+                    # Main
+                    title = post['title']['rendered'].replace(
+                        '&amp;', '&').strip()
+                    slug = post['slug']
+                    body = self.convertHTMLToContentfulJson(
+                        post['content']['rendered'])
+                    # excerpt = self.cleanExcerpt(post['excerpt']['rendered'])
+                    excerpt = post['excerpt']['rendered']
+                    date = post['date']
 
-                # Thumbnail
-                featuredMediaLink = post['_links']['wp:featuredmedia'][0]['href']
-                featuredMediaRes = requests.request(
-                    "GET", featuredMediaLink, headers={}, data={})
-                featuredMediaData = json.loads(featuredMediaRes.text)
+                    # Thumbnail
+                    featuredMediaLink = post['_links']['wp:featuredmedia'][0]['href']
+                    featuredMediaRes = requests.request(
+                        "GET", featuredMediaLink, headers={}, data={})
+                    featuredMediaData = json.loads(featuredMediaRes.text)
 
-                imageLink = featuredMediaData['source_url']
-                imageAlt = featuredMediaData['alt_text']
-                if imageAlt == "":
-                    imageAlt = title
+                    imageLink = featuredMediaData['source_url']
+                    imageAlt = featuredMediaData['alt_text']
+                    if imageAlt == "":
+                        imageAlt = title
 
-                thumbnail = {
-                    "sys": {
-                        "type": "Link",
-                        "linkType": "Asset",
-                        "id": contentfulImage(imageLink, imageAlt)
+                    thumbnail = {
+                        "sys": {
+                            "type": "Link",
+                            "linkType": "Asset",
+                            "id": contentfulImage(imageLink, imageAlt)
+                        }
                     }
-                }
 
-                # Author
-                authorLink = post['_links']['author'][0]['href']
-                authorRes = requests.request(
-                    "GET", authorLink, headers={}, data={})
-                authorData = json.loads(authorRes.text)
+                    # Author
+                    authorLink = post['_links']['author'][0]['href']
+                    authorRes = requests.request(
+                        "GET", authorLink, headers={}, data={})
+                    authorData = json.loads(authorRes.text)
 
-                author = {
-                    "sys": {
-                        "type": "Link",
-                        "linkType": "Entry",
-                        "id": contentfulAuthor(
-                                authorData['name'], authorData['slug'], authorData['description'])
-                    }
-                }
-
-                # Categories
-                categoriesLink = post['_links']['wp:term'][0]['href']
-                categoriesRes = requests.request(
-                    "GET", categoriesLink, headers={}, data={})
-                categoriesData = json.loads(categoriesRes.text)
-
-                categories = []
-                for categoryData in categoriesData:
-                    categorySlug = categoryData['slug']
-                    categoryName = categoryData['name'].replace('&amp;', '&')
-                    categoryDescription = categoryData['description']
-
-                    category = contentfulCategory(
-                        categoryName, categorySlug, categoryDescription)
-
-                    categories.append({
+                    author = {
                         "sys": {
                             "type": "Link",
                             "linkType": "Entry",
-                            "id": category
+                            "id": contentfulAuthor(
+                                    authorData['name'], authorData['slug'], authorData['description'])
                         }
-                    })
+                    }
 
-                # Tags
-                tagsLink = post['_links']['wp:term'][1]['href']
-                tagsRes = requests.request(
-                    "GET", tagsLink, headers={}, data={})
-                tagsData = json.loads(tagsRes.text)
+                    # Categories
+                    categoriesLink = post['_links']['wp:term'][0]['href']
+                    categoriesRes = requests.request(
+                        "GET", categoriesLink, headers={}, data={})
+                    categoriesData = json.loads(categoriesRes.text)
 
-                tags = []
-                for tagData in tagsData:
-                    tagSlug = tagData['slug']
-                    tagName = tagData['name'].replace('&amp;', '&')
-                    tagDescription = tagData['description']
+                    categories = []
+                    for categoryData in categoriesData:
+                        categorySlug = categoryData['slug']
+                        categoryName = categoryData['name'].replace(
+                            '&amp;', '&')
+                        categoryDescription = categoryData['description']
 
-                    tag = contentfulTag(
-                        tagName, tagSlug, tagDescription)
+                        category = contentfulCategory(
+                            categoryName, categorySlug, categoryDescription)
 
-                    tags.append({
-                        "sys": {
-                            "type": "Link",
-                            "linkType": "Entry",
-                            "id": tag
-                        }
-                    })
+                        categories.append({
+                            "sys": {
+                                "type": "Link",
+                                "linkType": "Entry",
+                                "id": category
+                            }
+                        })
 
-                contentfulPost(title, slug, body, excerpt, date,
-                               thumbnail, author, categories, tags)
+                    # Tags
+                    tagsLink = post['_links']['wp:term'][1]['href']
+                    tagsRes = requests.request(
+                        "GET", tagsLink, headers={}, data={})
+                    tagsData = json.loads(tagsRes.text)
 
-                print("--------------------------------------------------------")
+                    tags = []
+                    for tagData in tagsData:
+                        tagSlug = tagData['slug']
+                        tagName = tagData['name'].replace('&amp;', '&')
+                        tagDescription = tagData['description']
+
+                        tag = contentfulTag(
+                            tagName, tagSlug, tagDescription)
+
+                        tags.append({
+                            "sys": {
+                                "type": "Link",
+                                "linkType": "Entry",
+                                "id": tag
+                            }
+                        })
+
+                    contentfulPost(title, slug, body, excerpt, date,
+                                   thumbnail, author, categories, tags)
+
+                    print("--------------------------------------------------------")
+
+                except Exception as e:
+                    print(e)
+                    continue
