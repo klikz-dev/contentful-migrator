@@ -11,13 +11,15 @@ env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 
-def uploadImage(link, alt):
+def uploadImage(link, alt, fileName=""):
     url = "https://api.contentful.com/spaces/{}/environments/{}/assets".format(
         env('CONTENTFUL_SPACE_ID'), env('CONTENTFUL_ENVIRONMENT_ID'))
 
-    fileName = link.split('/')[-1].replace('.jpg', '')
+    if fileName == "":
+        fileName = link.split('/')[-1].replace('.jpg', '')
+
     if alt == "":
-        alt = name
+        alt = fileName
 
     payload = json.dumps({
         "fields": {

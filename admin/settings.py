@@ -38,9 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'django_json_widget',
-
-    'posts'
+    'wordpress'
 ]
 
 MIDDLEWARE = [

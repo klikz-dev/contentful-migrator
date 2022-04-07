@@ -5,6 +5,7 @@ import json
 from bs4 import BeautifulSoup
 
 from library.contentful import contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAffiliate, contentfulAuthor, contentfulCategory, contentfulTag
+from wordpress.models import Author, Category, Media, Post, Tag
 
 
 class Command(BaseCommand):
@@ -652,115 +653,118 @@ class Command(BaseCommand):
 
     def main(self):
 
-        print('Collecting All posts data...')
-
-        allPosts = []
-        for page in range(1, 5):
-            print("Page {}".format(page))
-
-            postsRes = requests.request(
-                "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?per_page=100&page={}".format(page), headers={}, data={})
-
-            posts = json.loads(postsRes.text)
-
-            for post in posts:
-                allPosts.append(post)
-
         print('Uploading posts to Contentful...')
 
-        for post in allPosts:
-            try:
+        posts = Post.objects.all()
+        for post in posts:
+            # try:
+            if 1 == 1:
                 print("--------------------------------------------------------")
 
                 # Main
-                title = post['title']['rendered'].replace(
-                    '&amp;', '&').strip()
-                slug = post['slug']
-                body = self.convertHTMLToContentfulJson(
-                    post['content']['rendered'])
-                excerpt = self.cleanExcerpt(post['excerpt']['rendered'])
-                date = post['date']
+                title = post.title
+                slug = post.slug
+                body = self.convertHTMLToContentfulJson(post.body)
+                excerpt = self.cleanExcerpt(post.excerpt)
+                date = post.date
+
+                thumbnail = {}
+                author = {}
 
                 # Thumbnail
-                featuredMediaLink = post['_links']['wp:featuredmedia'][0]['href']
-                featuredMediaRes = requests.request(
-                    "GET", featuredMediaLink, headers={}, data={})
-                featuredMediaData = json.loads(featuredMediaRes.text)
+                try:
+                    featured_media = Media.objects.get(id=post.featured_media)
 
-                imageLink = featuredMediaData['source_url']
-                imageAlt = featuredMediaData['alt_text']
-                if imageAlt == "":
-                    imageAlt = title
+                    link = featured_media.link
+                    alt = featured_media.alt
+                    if alt == "":
+                        alt = title
 
-                thumbnail = {
-                    "sys": {
-                        "type": "Link",
-                        "linkType": "Asset",
-                        "id": contentfulImage(imageLink, imageAlt)
+                    contentfulImageId = contentfulImage(link, alt)
+
+                    thumbnail = {
+                        "sys": {
+                            "type": "Link",
+                            "linkType": "Asset",
+                            "id": contentfulImageId
+                        }
                     }
-                }
+                except Media.DoesNotExist:
+                    print("No Featured Media for post {}".format(title))
 
                 # Author
-                authorLink = post['_links']['author'][0]['href']
-                authorRes = requests.request(
-                    "GET", authorLink, headers={}, data={})
-                authorData = json.loads(authorRes.text)
+                try:
+                    wpAuthor = Author.objects.get(id=post.author)
 
-                author = {
-                    "sys": {
-                        "type": "Link",
-                        "linkType": "Entry",
-                        "id": contentfulAuthor(
-                                authorData['name'], authorData['slug'], authorData['description'])
+                    name = wpAuthor.name
+                    slug = wpAuthor.slug
+                    description = wpAuthor.description
+
+                    contentfulAuthorId = contentfulAuthor(
+                        name, slug, description)
+
+                    author = {
+                        "sys": {
+                            "type": "Link",
+                            "linkType": "Entry",
+                            "id": contentfulAuthorId
+                        }
                     }
-                }
+                except Media.DoesNotExist:
+                    print("No Featured Media for post {}".format(title))
 
                 # Categories
-                categoriesLink = post['_links']['wp:term'][0]['href']
-                categoriesRes = requests.request(
-                    "GET", categoriesLink, headers={}, data={})
-                categoriesData = json.loads(categoriesRes.text)
-
                 categories = []
-                for categoryData in categoriesData:
-                    categorySlug = categoryData['slug']
-                    categoryName = categoryData['name'].replace(
-                        '&amp;', '&')
-                    categoryDescription = categoryData['description']
 
-                    category = contentfulCategory(
-                        categoryName, categorySlug, categoryDescription)
+                for categoryId in post.categories.split(','):
+                    if categoryId != "":
+                        try:
 
-                    categories.append({
-                        "sys": {
-                            "type": "Link",
-                            "linkType": "Entry",
-                            "id": category
-                        }
-                    })
+                            wpCategory = Category.objects.get(id=categoryId)
+
+                            name = wpCategory.name
+                            slug = wpCategory.slug
+                            description = wpCategory.description
+
+                            contentfulCategoryId = contentfulCategory(
+                                name, slug, description)
+
+                            categories.append({
+                                "sys": {
+                                    "type": "Link",
+                                    "linkType": "Entry",
+                                    "id": contentfulCategoryId
+                                }
+                            })
+
+                        except Media.DoesNotExist:
+                            print("No Featured Media for post {}".format(title))
 
                 # Tags
-                tagsLink = post['_links']['wp:term'][1]['href']
-                tagsRes = requests.request(
-                    "GET", tagsLink, headers={}, data={})
-                tagsData = json.loads(tagsRes.text)
-
                 tags = []
-                for tagData in tagsData:
-                    tagSlug = tagData['slug']
-                    tagName = tagData['name'].replace('&amp;', '&')
-                    tagDescription = tagData['description']
 
-                    tag = contentfulTag(
-                        tagName, tagSlug, tagDescription)
+                for tagId in post.tags.split(','):
+                    if tagId != "":
+                        try:
+                            wpTag = Tag.objects.get(id=tagId)
 
-                    tags.append({
-                        "sys": {
-                            "type": "Link",
-                            "linkType": "Entry",
-                            "id": tag
-                        }
-                    })
+                            name = wpTag.name
+                            slug = wpTag.slug
+                            description = wpTag.description
+
+                            contentfulTagId = contentfulTag(
+                                name, slug, description)
+
+                            tags.append({
+                                "sys": {
+                                    "type": "Link",
+                                    "linkType": "Entry",
+                                    "id": contentfulTagId
+                                }
+                            })
+
+                        except Media.DoesNotExist:
+                            print("No Tag for post {}".format(title))
 
                 # Create Post
                 contentfulPost(title, slug, body, excerpt,
@@ -768,6 +772,6 @@ class Command(BaseCommand):
 
                 print("--------------------------------------------------------")
 
-            except Exception as e:
-                print(e)
-                continue
+            # except Exception as e:
+            #     print(e)
+            #     continue
