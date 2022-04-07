@@ -1,11 +1,157 @@
 from django.core.management.base import BaseCommand
 
-import requests
 import json
 from bs4 import BeautifulSoup
 
 from library.contentful import contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAffiliate, contentfulAuthor, contentfulCategory, contentfulTag
 from wordpress.models import Author, Category, Media, Post, Tag
+
+
+redirectedPosts = [
+    "*/business-directory-2/*",
+    "*/statistics.php*",
+    "*/downloads/*",
+    "*/history.php*",
+    "*/manufacturers.php*",
+    "*/safety.php*",
+    "*/project*/sig*",
+    "*/project*/bersa*",
+    "*/project*/*-safe*",
+    "*/project/full-auto-conversion-of-the-sks-rifle/",
+    "*/reports.php*",
+    "*/glossary.php*",
+    "*/project*/colt*",
+    "*/gun-safes-page/",
+    "*what-is-a-firearm-page",
+    "*beginners-corner-page/",
+    "*/safety-page/",
+    "*/firearm-training-page/",
+    "*/firearms-glossary-page/",
+    "*/links-page",
+    "*/statistics-page",
+    "*reports-and-opinions-page",
+    "*/books-page/",
+    "*/project/encyclopedia-of-modern-firearms-parts-and-assembly/",
+    "*/project/stack-on",
+    "*/project/fn-bda*",
+    "*/tag/*",
+    "*/ammunition-manufacturers-page/",
+    "*project/sw1911sc*",
+    "*/project/firearms-inventory-log-book/",
+    "*/gun-history-page*",
+    "*/laws.php",
+    "*/preppers-underground-guide-to-improvised-weapons-how-to-protect-yourself-without-a-firearm-using-everyday-items/",
+    "*project/pieper*",
+    "*project_category/belgium*",
+    "*/beretta.php*",
+    "*/join.php",
+    "*/philosophy*",
+    "*www.americanfirearms.org/images/Chart__big.gif",
+    "*/project/the-gun-digest-book-of-firearms*",
+    "*/gun-safes/-gcdg*",
+    "*/winixson-12-5-electronic-digital-lock-keypad-safe-box-cash-jewelry-gun-safe-black-new/",
+    "*/project_category/anciens*",
+    "*/guns-list-specifications/",
+    "*/para-ordnance*",
+    "*/ruger-firearms/-lite-hawg",
+    "*/project/the-gun-encyclopedia/",
+    "*/noah-webster-on-the-second-amendment/",
+    "*/a-quaker-said-what/",
+    "*/patrick-henry/",
+    "*star-model*",
+    "*/forums*",
+    "*/dalai-lama-but-if-someone-has-a-gun-and-is-trying-to-kill-you-it-would-be-reasonable-to-shoot-back-with-your-own-gun/",
+    "*/best-brass-catcher-reviews/military.html",
+    "*/project/standard-catalog-of-colt-firearms/",
+    "*/wp-content/uploads/2013/01/guns_public_health.pdf",
+    "*/2nd-amendment-quotes/",
+    "*/nra/",
+    "*/communications-center/",
+    "*/reccomended-reading/",
+    "*/angelina-jolie/",
+    "*/suzanna-hupp/",
+    "*/manufacturers-page/",
+    "https://www.americanfirearms.org/richard-henry-lee/",
+    "https://www.americanfirearms.org/project_tag/star-firestar-m43/",
+    "*/reports-and-opinions/",
+    "*/project/manurhin-mr73/",
+    "*/project_category/dwm/",
+    "*/project_tag/pieper-bayard-1923/",
+    "*/project/performance-center-mp9l-pro-series-c-o-r-e/",
+    "*/project/modelo-1905/",
+    "*/project_tag/fn-bda-380/",
+    "*/project/goplus-2-key-6-gun-rifle-storage-cabinet-case/",
+    "*/project/glock-reference-guide/",
+    "*/project/performance-center-sw1911-pro-series/",
+    "*/project/sw1911ta-e-series-tactical-accessory-rail/",
+    "*/the-2nd-amendment-complete-text/",
+    "*/george-mason-and-the-2nd-amendment/",
+    "*/thomas-jefferson-in-regards-to-the-second-amendment/",
+    "*/jeff-cooper-and-the-second-amendment/",
+    "*/fun-fact-about-homicide-rates-and-carry-laws/",
+    "*/330/",
+    "*/gun-control-laws-do-not-work/",
+    "*/only-certain-weapons-allowed-no/",
+    "*/who-is-the-militia-we-are/",
+    "*/411/",
+    "*/they-are-the-same/",
+    "*/tom-clancy/",
+    "*/richard-henry-lee/",
+    "*/police-do-not-have-a-constitutional-duty-to-protect/",
+    "*/georgia-supreme-court/",
+    "*/thomas-jefferson/",
+    "*/hve-you-seen-this-man/",
+    "*/wei-boyang/",
+    "*/white-house-executive-order/",
+    "*/standard-catalog-of-smith-wesson/",
+    "*/project/the-history-of-guns/",
+    "/rate-of-fire/",
+    "*viagra*",
+    "*prescription*",
+    "*pharm*",
+    "*Clomipramine*",
+    "*Pharmacy*",
+    "*MayoClinic*",
+    "*detroitchicago*",
+    "*Cannabis*",
+    "*hemp*",
+    "*college*",
+    "*resume*",
+    "*marketing*",
+    "*/books/",
+    "*/sw1911sc-e-series-round-butt-scandium-frame/",
+    "*/wound-ballistics-data/",
+    "*/bersa-s-a/",
+    "*/alabama-gun-laws/",
+    "*/magazine-capacity-101/",
+    "*/best-ar-15-rifles/links.htm",
+    "*/shop/daniel-defense-dd4v7/",
+    "https://www.americanfirearms.org/shop/smithwesson-m-p-9-shield-9mm/",
+    "*/shop/canik-tp9sfx",
+    "*/shop/kriss-vector-sdp/",
+    "*/shop/cz-drake",
+    "*/hi-point-carbine/",
+    "*/shop/cz-sharp-tail/",
+    "*/shop/beretta-px4-storm/",
+    "*/shop/sig-sauer-p220/",
+    "*/shop/fn-503/",
+    "*/shop/lee-precision-4-hole-turret-press-deluxe-kit/",
+    "https://www.americanfirearms.org/shop/iwi-tavor-ts12/",
+    "*/shop/walther-ppk/",
+    "*/shop/cz-p-07/",
+    "*/shop/jts-m12ar/",
+    "*/shop/ruger-gp100/",
+    "*/shop/stag-arms-stag-15/",
+    "*/shop/stoeger-coach-gun/",
+    "*/shop/auto-ordnance-1911",
+    "*/shop/diamondback-db15/",
+    "*/shop/benelli-m4",
+    "/shop/benelli-m4-tactical",
+    "*/shop/remington-870-express",
+    "*/shop/benelli-m4-m1014",
+    "*/shop/ruger-10-22-bx-trigger/",
+    "*/ruger-firearms/"
+]
 
 
 class Command(BaseCommand):
@@ -30,13 +176,16 @@ class Command(BaseCommand):
         contents = []
         for element in elements:
             if element.name == 'h1':
+                if element.get_text() == "":
+                    continue
+
                 content = {
                     "data": {},
                     "content": [
                         {
                             "data": {},
                             "marks": [],
-                            "value": element.string.strip(),
+                            "value": element.get_text().strip(),
                             "nodeType": "text"
                         }
                     ],
@@ -46,13 +195,16 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'h2':
+                if element.get_text() == "":
+                    continue
+
                 content = {
                     "data": {},
                     "content": [
                         {
                             "data": {},
                             "marks": [],
-                            "value": element.string.strip(),
+                            "value": element.get_text().strip(),
                             "nodeType": "text"
                         }
                     ],
@@ -62,10 +214,13 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'h3':
+                if element.get_text() == "":
+                    continue
+
                 if element.has_attr('class') and 'elementor-cta__title' in element['class']:
                     continue
 
-                if "The Latest" in element.string and "Reviews:" in element.string:
+                if "The Latest" in element.get_text() and "Reviews:" in element.get_text():
                     continue
 
                 content = {
@@ -74,7 +229,7 @@ class Command(BaseCommand):
                         {
                             "data": {},
                             "marks": [],
-                            "value": element.string.strip(),
+                            "value": element.get_text().strip(),
                             "nodeType": "text"
                         }
                     ],
@@ -83,9 +238,12 @@ class Command(BaseCommand):
 
                 contents.append(content)
 
-                latestH3 = element.string.strip()
+                latestH3 = element.get_text().strip()
 
             if element.name == 'h4':
+                if element.get_text() == "":
+                    continue
+
                 if element.has_attr('class') and 'elementor-toc__header-title' in element['class']:
                     continue
 
@@ -102,7 +260,7 @@ class Command(BaseCommand):
                         {
                             "data": {},
                             "marks": [],
-                            "value": element.string.strip(),
+                            "value": element.get_text().strip(),
                             "nodeType": "text"
                         }
                     ],
@@ -112,6 +270,9 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'p':
+                if element.get_text() == "":
+                    continue
+
                 parent = element.parent
                 if parent.has_attr('class') and 'elementor-post__excerpt' in parent['class']:
                     continue
@@ -179,6 +340,9 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'span':
+                if element.get_text() == "":
+                    continue
+
                 parent = element.parent
                 if parent.name != 'p' or parent.get_text() != element.get_text():
                     continue
@@ -419,47 +583,51 @@ class Command(BaseCommand):
                 ulContents = []
                 for child in element.children:
                     liContents = []
-                    for grandchild in child.children:
-                        if grandchild.name != None and len(grandchild.find_all('a')) > 0:
-                            link = grandchild.find_all('a')[0].get('href').replace(
-                                'https://www.americanfirearms.org', '')
+                    try:
+                        for grandchild in child.children:
+                            if grandchild.name != None and len(grandchild.find_all('a')) > 0:
+                                link = grandchild.find_all('a')[0].get('href').replace(
+                                    'https://www.americanfirearms.org', '')
 
-                            liContent = {
-                                "nodeType": "hyperlink",
-                                "content": [
-                                    {
-                                        "nodeType": "text",
-                                        "value": grandchild.find_all('a')[0].get_text(),
-                                        "marks": [],
-                                        "data": {}
+                                liContent = {
+                                    "nodeType": "hyperlink",
+                                    "content": [
+                                        {
+                                            "nodeType": "text",
+                                            "value": grandchild.find_all('a')[0].get_text(),
+                                            "marks": [],
+                                            "data": {}
+                                        }
+                                    ],
+                                    "data": {
+                                        "uri": link
                                     }
-                                ],
-                                "data": {
-                                    "uri": link
                                 }
-                            }
 
-                        elif grandchild.name == 'strong':
-                            liContent = {
-                                "data": {},
-                                "marks": [
-                                    {
-                                        "type": "bold"
-                                    }
-                                ],
-                                "value": grandchild.get_text(),
-                                "nodeType": "text"
-                            }
+                            elif grandchild.name == 'strong':
+                                liContent = {
+                                    "data": {},
+                                    "marks": [
+                                        {
+                                            "type": "bold"
+                                        }
+                                    ],
+                                    "value": grandchild.get_text(),
+                                    "nodeType": "text"
+                                }
 
-                        else:
-                            liContent = {
-                                "data": {},
-                                "marks": [],
-                                "value": grandchild.get_text(),
-                                "nodeType": "text"
-                            }
+                            else:
+                                liContent = {
+                                    "data": {},
+                                    "marks": [],
+                                    "value": grandchild.get_text(),
+                                    "nodeType": "text"
+                                }
 
-                        liContents.append(liContent)
+                            liContents.append(liContent)
+                    except Exception as e:
+                        print(e)
+                        continue
 
                     ulContent = {
                         "nodeType": "list-item",
@@ -487,66 +655,70 @@ class Command(BaseCommand):
                 olContents = []
                 for child in element.children:
                     liContents = []
-                    for grandchild in child.children:
-                        if grandchild.name == 'a':
-                            link = grandchild.get('href').replace(
-                                'https://www.americanfirearms.org', '')
+                    try:
+                        for grandchild in child.children:
+                            if grandchild.name == 'a':
+                                link = grandchild.get('href').replace(
+                                    'https://www.americanfirearms.org', '')
 
-                            liContent = {
-                                "nodeType": "hyperlink",
-                                "content": [
-                                    {
-                                        "nodeType": "text",
-                                        "value": grandchild.get_text(),
-                                        "marks": [],
-                                        "data": {}
+                                liContent = {
+                                    "nodeType": "hyperlink",
+                                    "content": [
+                                        {
+                                            "nodeType": "text",
+                                            "value": grandchild.get_text(),
+                                            "marks": [],
+                                            "data": {}
+                                        }
+                                    ],
+                                    "data": {
+                                        "uri": link
                                     }
-                                ],
-                                "data": {
-                                    "uri": link
                                 }
-                            }
 
-                        elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
-                            link = grandchild.find_all('a')[0].get('href').replace(
-                                'https://www.americanfirearms.org', '')
+                            elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
+                                link = grandchild.find_all('a')[0].get('href').replace(
+                                    'https://www.americanfirearms.org', '')
 
-                            liContent = {
-                                "nodeType": "hyperlink",
-                                "content": [
-                                    {
-                                        "nodeType": "text",
-                                        "value": grandchild.find_all('a')[0].get_text(),
-                                        "marks": [],
-                                        "data": {}
+                                liContent = {
+                                    "nodeType": "hyperlink",
+                                    "content": [
+                                        {
+                                            "nodeType": "text",
+                                            "value": grandchild.find_all('a')[0].get_text(),
+                                            "marks": [],
+                                            "data": {}
+                                        }
+                                    ],
+                                    "data": {
+                                        "uri": link
                                     }
-                                ],
-                                "data": {
-                                    "uri": link
                                 }
-                            }
 
-                        elif grandchild.name == 'strong':
-                            liContent = {
-                                "data": {},
-                                "marks": [
-                                    {
-                                        "type": "bold"
-                                    }
-                                ],
-                                "value": grandchild.get_text(),
-                                "nodeType": "text"
-                            }
+                            elif grandchild.name == 'strong':
+                                liContent = {
+                                    "data": {},
+                                    "marks": [
+                                        {
+                                            "type": "bold"
+                                        }
+                                    ],
+                                    "value": grandchild.get_text(),
+                                    "nodeType": "text"
+                                }
 
-                        else:
-                            liContent = {
-                                "data": {},
-                                "marks": [],
-                                "value": grandchild.get_text(),
-                                "nodeType": "text"
-                            }
+                            else:
+                                liContent = {
+                                    "data": {},
+                                    "marks": [],
+                                    "value": grandchild.get_text(),
+                                    "nodeType": "text"
+                                }
 
-                        liContents.append(liContent)
+                            liContents.append(liContent)
+                    except Exception as e:
+                        print(e)
+                        continue
 
                     olContent = {
                         "nodeType": "list-item",
@@ -658,8 +830,25 @@ class Command(BaseCommand):
         posts = Post.objects.all()
         for post in posts:
             # try:
-            if 1 == 1:
+            if True:
                 print("--------------------------------------------------------")
+
+                # Redirected Posts
+                redirected = False
+                for redirectedPost in redirectedPosts:
+                    if post.slug in redirectedPost:
+                        redirected = True
+
+                if redirected:
+                    print("Post {} redirected to another page".format(post.title))
+                    continue
+
+                if 'et_pb_section' in post.body or 'bb_built' in post.body or 'et_pb_row' in post.body:
+                    print("Post {} contains buggy html".format(post.title))
+                    continue
+                #################################
+
+                print("Processing Post {}".format(post.title))
 
                 # Main
                 title = post.title
@@ -675,12 +864,12 @@ class Command(BaseCommand):
                 try:
                     featured_media = Media.objects.get(id=post.featured_media)
 
-                    link = featured_media.link
-                    alt = featured_media.alt
-                    if alt == "":
-                        alt = title
+                    mediaLink = featured_media.link
+                    mediaAlt = featured_media.alt
+                    if mediaAlt == "":
+                        mediaAlt = title
 
-                    contentfulImageId = contentfulImage(link, alt)
+                    contentfulImageId = contentfulImage(mediaLink, mediaAlt)
 
                     thumbnail = {
                         "sys": {
@@ -696,12 +885,12 @@ class Command(BaseCommand):
                 try:
                     wpAuthor = Author.objects.get(id=post.author)
 
-                    name = wpAuthor.name
-                    slug = wpAuthor.slug
-                    description = wpAuthor.description
+                    authorName = wpAuthor.name
+                    authorSlug = wpAuthor.slug
+                    authorDescription = wpAuthor.description
 
                     contentfulAuthorId = contentfulAuthor(
-                        name, slug, description)
+                        authorName, authorSlug, authorDescription)
 
                     author = {
                         "sys": {
@@ -722,12 +911,12 @@ class Command(BaseCommand):
 
                             wpCategory = Category.objects.get(id=categoryId)
 
-                            name = wpCategory.name
-                            slug = wpCategory.slug
-                            description = wpCategory.description
+                            categoryName = wpCategory.name
+                            categorySlug = wpCategory.slug
+                            categoryDescription = wpCategory.description
 
                             contentfulCategoryId = contentfulCategory(
-                                name, slug, description)
+                                categoryName, categorySlug, categoryDescription)
 
                             categories.append({
                                 "sys": {
@@ -748,12 +937,12 @@ class Command(BaseCommand):
                         try:
                             wpTag = Tag.objects.get(id=tagId)
 
-                            name = wpTag.name
-                            slug = wpTag.slug
-                            description = wpTag.description
+                            tagName = wpTag.name
+                            tagSlug = wpTag.slug
+                            tagDescription = wpTag.description
 
                             contentfulTagId = contentfulTag(
-                                name, slug, description)
+                                tagName, tagSlug, tagDescription)
 
                             tags.append({
                                 "sys": {

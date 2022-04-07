@@ -45,6 +45,7 @@ def uploadImage(link, alt, fileName=""):
 
     if response.status_code != 201:
         print("Image creation failed. Link: {}, Alt: {}".format(link, alt))
+        print(response.text)
         return None
     else:
         print("Image creation successful. Link: {}, Alt: {}".format(link, alt))
@@ -66,6 +67,7 @@ def processImage(imageId, version):
 
     if response.status_code != 204:
         print("Image Process Error. Image: {}".format(imageId))
+        print(response.text)
 
 
 def publishImage(imageId, version):
@@ -83,6 +85,7 @@ def publishImage(imageId, version):
 
     if response.status_code != 200:
         print("Image Publish Error. Image: {}".format(imageId))
+        print(response.text)
 
 
 def publishEntry(entryId):
@@ -99,7 +102,8 @@ def publishEntry(entryId):
     response = requests.request("PUT", url, headers=headers, data=payload)
 
     if response.status_code != 200:
-        print("Post Publish Error. Image: {}".format(entryId))
+        print("Post Publish Error. Post: {}".format(entryId))
+        print(response.text)
 
 
 def contentfulImage(link, alt):
@@ -157,6 +161,7 @@ def contentfulCTA(title, link, image, buttonText, price):
 
     if response.status_code != 201:
         print("Creating CTA failed")
+        print(response.text)
         return ""
 
     else:
@@ -197,6 +202,7 @@ def contentfulTable(name, tableData, thumbnails):
 
     if response.status_code != 201:
         print("Creating Table failed")
+        print(response.text)
         return ""
 
     else:
@@ -234,6 +240,7 @@ def contentfulScorecard(name, tableData):
 
     if response.status_code != 201:
         print("Creating Scorecard failed")
+        print(response.text)
         return ""
 
     else:
@@ -266,6 +273,7 @@ def contentfulEmbed(src):
 
     if response.status_code != 201:
         print("Creating Embed failed")
+        print(response.text)
         return ""
 
     else:
@@ -298,6 +306,7 @@ def contentfulAffiliate(productId):
 
     if response.status_code != 201:
         print("Creating Amazon Affiliate failed")
+        print(response.text)
         return ""
 
     else:
@@ -349,6 +358,7 @@ def contentfulAuthor(name, slug, description):
 
     if response.status_code != 201:
         print("Creating Author failed")
+        print(response.text)
         return ""
 
     else:
@@ -400,6 +410,7 @@ def contentfulCategory(name, slug, description):
 
     if response.status_code != 201:
         print("Creating Category failed")
+        print(response.text)
         return ""
 
     else:
@@ -451,6 +462,7 @@ def contentfulTag(name, slug, description):
 
     if response.status_code != 201:
         print("Creating Tag failed")
+        print(response.text)
         return ""
 
     else:
@@ -507,6 +519,7 @@ def contentfulPost(title, slug, body, excerpt, date, thumbnail, author, categori
 
     if response.status_code != 201:
         print("Creating Post failed")
+        print(response.text)
         return ""
 
     else:
