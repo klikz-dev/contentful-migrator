@@ -1,3 +1,4 @@
+from unicodedata import name
 import requests
 import json
 import environ
@@ -14,8 +15,9 @@ def uploadImage(link, alt):
     url = "https://api.contentful.com/spaces/{}/environments/{}/assets".format(
         env('CONTENTFUL_SPACE_ID'), env('CONTENTFUL_ENVIRONMENT_ID'))
 
+    fileName = link.split('/')[-1].replace('.jpg', '')
     if alt == "":
-        alt = link.split('/')[-1].replace('.jpg', '')
+        alt = name
 
     payload = json.dumps({
         "fields": {
@@ -25,6 +27,7 @@ def uploadImage(link, alt):
             "file": {
                 "en-US": {
                     "contentType": "image/jpeg",
+                    "fileName": fileName,
                     "upload": link
                 }
             }
