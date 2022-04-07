@@ -14,6 +14,9 @@ def uploadImage(link, alt):
     url = "https://api.contentful.com/spaces/{}/environments/{}/assets".format(
         env('CONTENTFUL_SPACE_ID'), env('CONTENTFUL_ENVIRONMENT_ID'))
 
+    if alt == "":
+        alt = link.split('/')[-1].replace('.jpg', '')
+
     payload = json.dumps({
         "fields": {
             "title": {
@@ -22,7 +25,6 @@ def uploadImage(link, alt):
             "file": {
                 "en-US": {
                     "contentType": "image/jpeg",
-                    "fileName": alt,
                     "upload": link
                 }
             }
@@ -104,6 +106,7 @@ def contentfulImage(link, alt):
     version = upload['sys']['version']
 
     processImage(imageId, version)
+    time.sleep(1)
     publishImage(imageId, version + 1)
 
     return imageId
