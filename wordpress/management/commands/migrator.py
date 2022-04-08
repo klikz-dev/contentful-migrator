@@ -822,7 +822,134 @@ class Command(BaseCommand):
     def cleanExcerpt(self, excerpt):
         soup = BeautifulSoup(excerpt, 'html.parser')
 
-        return soup.get_text().strip()
+        elements = soup.find_all('p')
+
+        contents = []
+        for element in elements:
+            if element.get_text() == "":
+                continue
+
+            if element.name == 'a':
+                link = element.get('href').replace(
+                    'https://www.americanfirearms.org', '')
+
+                content = {
+                    "nodeType": "hyperlink",
+                    "content": [
+                        {
+                            "nodeType": "text",
+                            "value": element.get_text(),
+                            "marks": [],
+                            "data": {}
+                        }
+                    ],
+                    "data": {
+                        "uri": link
+                    }
+                }
+
+            elif element.name != None and len(element.find_all('a')) > 0:
+                link = element.find_all('a')[0].get('href').replace(
+                    'https://www.americanfirearms.org', '')
+
+                content = {
+                    "nodeType": "hyperlink",
+                    "content": [
+                        {
+                            "nodeType": "text",
+                            "value": element.find_all('a')[0].get_text(),
+                            "marks": [],
+                            "data": {}
+                        }
+                    ],
+                    "data": {
+                        "uri": link
+                    }
+                }
+
+            else:
+                content = {
+                    "data": {},
+                    "marks": [],
+                    "value": element.get_text(),
+                    "nodeType": "text"
+                }
+
+            paragraph = {
+                "data": {},
+                "content": content,
+                "nodeType": "paragraph"
+            }
+
+            contents.append(paragraph)
+
+        return {
+            "data": {},
+            "content": contents,
+            "nodeType": "document"
+        }
+
+    def cleanDescription(self, excerpt):
+        soup = BeautifulSoup(excerpt, 'html.parser')
+
+        contents = []
+        for element in soup.children:
+            if element.get_text().strip() == "":
+                continue
+
+            if element.name == 'a':
+                link = element.get('href').replace(
+                    'https://www.americanfirearms.org', '')
+
+                content = {
+                    "nodeType": "hyperlink",
+                    "content": [
+                        {
+                            "nodeType": "text",
+                            "value": element.get_text(),
+                            "marks": [],
+                            "data": {}
+                        }
+                    ],
+                    "data": {
+                        "uri": link
+                    }
+                }
+
+            elif element.name != None and len(element.find_all('a')) > 0:
+                link = element.find_all('a')[0].get('href').replace(
+                    'https://www.americanfirearms.org', '')
+
+                content = {
+                    "nodeType": "hyperlink",
+                    "content": [
+                        {
+                            "nodeType": "text",
+                            "value": element.find_all('a')[0].get_text(),
+                            "marks": [],
+                            "data": {}
+                        }
+                    ],
+                    "data": {
+                        "uri": link
+                    }
+                }
+
+            else:
+                content = {
+                    "data": {},
+                    "marks": [],
+                    "value": element.get_text(),
+                    "nodeType": "text"
+                }
+
+            contents.append(content)
+
+        return {
+            "data": {},
+            "content": contents,
+            "nodeType": "document"
+        }
 
     def main(self):
 
@@ -831,7 +958,7 @@ class Command(BaseCommand):
         posts = Post.objects.all()
         for post in posts:
             # try:
-            if True:
+            if post.slug == 'guide-to-shotgun-chokes':
                 print("--------------------------------------------------------")
 
                 # Redirected Posts
@@ -854,8 +981,8 @@ class Command(BaseCommand):
                 # Main
                 title = html.unescape(post.title)
                 slug = post.slug
-                body = self.convertHTMLToContentfulJson(post.body)
                 excerpt = self.cleanExcerpt(post.excerpt)
+                body = self.convertHTMLToContentfulJson(post.body)
                 date = post.date
 
                 thumbnail = {}
@@ -888,7 +1015,8 @@ class Command(BaseCommand):
 
                     authorName = html.unescape(wpAuthor.name)
                     authorSlug = wpAuthor.slug
-                    authorDescription = wpAuthor.description
+                    authorDescription = self.cleanDescription(
+                        wpAuthor.description)
 
                     contentfulAuthorId = contentfulAuthor(
                         authorName, authorSlug, authorDescription)
@@ -914,7 +1042,8 @@ class Command(BaseCommand):
 
                             categoryName = html.unescape(wpCategory.name)
                             categorySlug = wpCategory.slug
-                            categoryDescription = wpCategory.description
+                            categoryDescription = self.cleanDescription(
+                                wpCategory.description)
 
                             contentfulCategoryId = contentfulCategory(
                                 categoryName, categorySlug, categoryDescription)
@@ -940,7 +1069,8 @@ class Command(BaseCommand):
 
                             tagName = html.unescape(wpTag.name)
                             tagSlug = wpTag.slug
-                            tagDescription = wpTag.description
+                            tagDescription = self.cleanDescription(
+                                wpTag.description)
 
                             contentfulTagId = contentfulTag(
                                 tagName, tagSlug, tagDescription)
