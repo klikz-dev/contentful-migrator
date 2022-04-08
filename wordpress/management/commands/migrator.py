@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 
 import json
 from bs4 import BeautifulSoup
+import html
 
 from library.contentful import contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAffiliate, contentfulAuthor, contentfulCategory, contentfulTag
 from wordpress.models import Author, Category, Media, Post, Tag
@@ -851,7 +852,7 @@ class Command(BaseCommand):
                 print("Processing Post {}".format(post.title))
 
                 # Main
-                title = post.title
+                title = html.unescape(post.title)
                 slug = post.slug
                 body = self.convertHTMLToContentfulJson(post.body)
                 excerpt = self.cleanExcerpt(post.excerpt)
@@ -885,7 +886,7 @@ class Command(BaseCommand):
                 try:
                     wpAuthor = Author.objects.get(id=post.author)
 
-                    authorName = wpAuthor.name
+                    authorName = html.unescape(wpAuthor.name)
                     authorSlug = wpAuthor.slug
                     authorDescription = wpAuthor.description
 
@@ -911,7 +912,7 @@ class Command(BaseCommand):
 
                             wpCategory = Category.objects.get(id=categoryId)
 
-                            categoryName = wpCategory.name
+                            categoryName = html.unescape(wpCategory.name)
                             categorySlug = wpCategory.slug
                             categoryDescription = wpCategory.description
 
@@ -937,7 +938,7 @@ class Command(BaseCommand):
                         try:
                             wpTag = Tag.objects.get(id=tagId)
 
-                            tagName = wpTag.name
+                            tagName = html.unescape(wpTag.name)
                             tagSlug = wpTag.slug
                             tagDescription = wpTag.description
 
