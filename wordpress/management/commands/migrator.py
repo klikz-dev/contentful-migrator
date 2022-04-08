@@ -877,7 +877,7 @@ class Command(BaseCommand):
 
             paragraph = {
                 "data": {},
-                "content": content,
+                "content": [content],
                 "nodeType": "paragraph"
             }
 
@@ -947,7 +947,11 @@ class Command(BaseCommand):
 
         return {
             "data": {},
-            "content": contents,
+            "content": [{
+                "data": {},
+                "content": contents,
+                "nodeType": "paragraph"
+            }],
             "nodeType": "document"
         }
 
@@ -957,8 +961,7 @@ class Command(BaseCommand):
 
         posts = Post.objects.all()
         for post in posts:
-            # try:
-            if post.slug == 'guide-to-shotgun-chokes':
+            try:
                 print("--------------------------------------------------------")
 
                 # Redirected Posts
@@ -1092,6 +1095,6 @@ class Command(BaseCommand):
 
                 print("--------------------------------------------------------")
 
-            # except Exception as e:
-            #     print(e)
-            #     continue
+            except Exception as e:
+                print(e)
+                continue
