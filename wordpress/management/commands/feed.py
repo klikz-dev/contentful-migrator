@@ -3,6 +3,8 @@ from django.core.management.base import BaseCommand
 import requests
 import json
 
+from bs4 import BeautifulSoup
+
 from wordpress.models import Author, Category, Media, Post, Tag
 
 
@@ -60,6 +62,10 @@ class Command(BaseCommand):
                 categories = ", ".join(str(c) for c in post['categories'])
                 tags = ", ".join(str(t) for t in post['tags'])
                 featured_media = post['featured_media']
+
+                if excerpt == "":
+                    soup = BeautifulSoup(post['excerpt']['rendered'], 'html.parser')
+                    excerpt = soup.find('p').get_text()
 
                 try:
                     Post.objects.get(id=id)
