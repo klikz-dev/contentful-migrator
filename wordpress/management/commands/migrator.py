@@ -922,7 +922,7 @@ class Command(BaseCommand):
                 # Main
                 title = html.unescape(post.title)
                 slug = post.slug
-                excerpt = post.excerpt
+                excerpt = html.unescape(post.excerpt)
                 body = self.convertHTMLToContentfulJson(post.body)
                 date = post.date
 
