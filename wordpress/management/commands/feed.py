@@ -45,7 +45,7 @@ class Command(BaseCommand):
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?per_page=10&page={}".format(page), headers={}, data={})
 
             if postsRes.status_code != 200:
-                continue
+                break
 
             posts = json.loads(postsRes.text)
 
@@ -88,7 +88,7 @@ class Command(BaseCommand):
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/users?per_page=10&page={}".format(page), headers={}, data={})
 
             if authorsRes.status_code != 200:
-                continue
+                break
 
             authors = json.loads(authorsRes.text)
 
@@ -119,7 +119,7 @@ class Command(BaseCommand):
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/categories?per_page=10&page={}".format(page), headers={}, data={})
 
             if categoriesRes.status_code != 200:
-                continue
+                break
 
             categories = json.loads(categoriesRes.text)
 
@@ -150,7 +150,7 @@ class Command(BaseCommand):
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/tags?per_page=10&page={}".format(page), headers={}, data={})
 
             if tagsRes.status_code != 200:
-                continue
+                break
 
             tags = json.loads(tagsRes.text)
 
@@ -181,7 +181,7 @@ class Command(BaseCommand):
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/media?per_page=10&page={}".format(page), headers={}, data={})
 
             if mediasRes.status_code != 200:
-                continue
+                break
 
             medias = json.loads(mediasRes.text)
 
