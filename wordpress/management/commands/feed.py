@@ -17,12 +17,17 @@ class Command(BaseCommand):
             self.main()
 
     def seo(self, id):
-        seoRes = requests.request(
+        try:
+            seoRes = requests.request(
                 "GET", "https://www.americanfirearms.org/wp-json/seopress/v1/posts/{}".format(id), headers={}, data={})
 
-        seo = json.loads(seoRes.text)
+            seo = json.loads(seoRes.text)
 
-        return seo['description']
+            return seo['description']
+
+        except Exception as e:
+            print(e)
+            return ""
 
     def main(self):
 
@@ -33,11 +38,14 @@ class Command(BaseCommand):
         Post.objects.all().delete()
 
         print('Collecting All posts data...')
-        for page in range(1, 41):
+        for page in range(1, 50):
             print("Page {}".format(page))
 
             postsRes = requests.request(
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/posts?per_page=10&page={}".format(page), headers={}, data={})
+
+            if postsRes.status_code != 200:
+                continue
 
             posts = json.loads(postsRes.text)
 
@@ -73,11 +81,14 @@ class Command(BaseCommand):
                 )
 
         print('Collecting All authors data...')
-        for page in range(1, 2):
+        for page in range(1, 5):
             print("Page {}".format(page))
 
             authorsRes = requests.request(
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/users?per_page=10&page={}".format(page), headers={}, data={})
+
+            if authorsRes.status_code != 200:
+                continue
 
             authors = json.loads(authorsRes.text)
 
@@ -101,11 +112,14 @@ class Command(BaseCommand):
                 )
 
         print('Collecting All Categories data...')
-        for page in range(1, 3):
+        for page in range(1, 5):
             print("Page {}".format(page))
 
             categoriesRes = requests.request(
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/categories?per_page=10&page={}".format(page), headers={}, data={})
+
+            if categoriesRes.status_code != 200:
+                continue
 
             categories = json.loads(categoriesRes.text)
 
@@ -129,11 +143,14 @@ class Command(BaseCommand):
                 )
 
         print('Collecting All Tags data...')
-        for page in range(1, 19):
+        for page in range(1, 30):
             print("Page {}".format(page))
 
             tagsRes = requests.request(
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/tags?per_page=10&page={}".format(page), headers={}, data={})
+
+            if tagsRes.status_code != 200:
+                continue
 
             tags = json.loads(tagsRes.text)
 
@@ -157,11 +174,14 @@ class Command(BaseCommand):
                 )
 
         print('Collecting All Medias data...')
-        for page in range(1, 558):
+        for page in range(1, 1000):
             print("Page {}".format(page))
 
             mediasRes = requests.request(
                 "GET", "https://www.americanfirearms.org/wp-json/wp/v2/media?per_page=10&page={}".format(page), headers={}, data={})
+
+            if mediasRes.status_code != 200:
+                continue
 
             medias = json.loads(mediasRes.text)
 
