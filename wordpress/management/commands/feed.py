@@ -16,6 +16,14 @@ class Command(BaseCommand):
         if "main" in options['functions']:
             self.main()
 
+    def seo(self, id):
+        seoRes = requests.request(
+                "GET", "https://www.americanfirearms.org/wp-json/seopress/v1/posts/{}".format(id), headers={}, data={})
+
+        seo = json.loads(seoRes.text)
+
+        return seo['description']
+
     def main(self):
 
         Author.objects.all().delete()
@@ -38,7 +46,7 @@ class Command(BaseCommand):
                 title = post['title']['rendered'].replace('&amp;', '&').strip()
                 slug = post['slug']
                 body = post['content']['rendered']
-                excerpt = post['excerpt']['rendered']
+                excerpt = self.seo(id)
                 date = post['date']
                 author = post['author']
                 categories = ", ".join(str(c) for c in post['categories'])

@@ -488,7 +488,7 @@ def contentfulPost(title, slug, body, excerpt, date, thumbnail, author, categori
             "body": {
                 "en-US": body
             },
-            "excerpt": {
+            "seo": {
                 "en-US": excerpt
             },
             "publishedAt": {

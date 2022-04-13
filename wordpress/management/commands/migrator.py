@@ -248,6 +248,9 @@ class Command(BaseCommand):
                 if element.has_attr('class') and 'elementor-toc__header-title' in element['class']:
                     continue
 
+                if element.has_attr('class') and 'elementor-cta__title' in element['class']:
+                    continue
+
                 if 'Performance Scorecard' in element.get_text():
                     continue
 
@@ -822,66 +825,68 @@ class Command(BaseCommand):
     def cleanExcerpt(self, excerpt):
         soup = BeautifulSoup(excerpt, 'html.parser')
 
-        elements = soup.find_all('p')
+        return soup.get_text()
 
-        contents = []
-        for element in elements:
-            if element.get_text() == "":
-                continue
+        # elements = soup.find_all('p')
 
-            if element.name == 'a':
-                link = element.get('href').replace(
-                    'https://www.americanfirearms.org', '')
+        # contents = []
+        # for element in elements:
+        #     if element.get_text() == "":
+        #         continue
 
-                content = {
-                    "nodeType": "hyperlink",
-                    "content": [
-                        {
-                            "nodeType": "text",
-                            "value": element.get_text(),
-                            "marks": [],
-                            "data": {}
-                        }
-                    ],
-                    "data": {
-                        "uri": link
-                    }
-                }
+        #     if element.name == 'a':
+        #         link = element.get('href').replace(
+        #             'https://www.americanfirearms.org', '')
 
-            elif element.name != None and len(element.find_all('a')) > 0:
-                link = element.find_all('a')[0].get('href').replace(
-                    'https://www.americanfirearms.org', '')
+        #         content = {
+        #             "nodeType": "hyperlink",
+        #             "content": [
+        #                 {
+        #                     "nodeType": "text",
+        #                     "value": element.get_text(),
+        #                     "marks": [],
+        #                     "data": {}
+        #                 }
+        #             ],
+        #             "data": {
+        #                 "uri": link
+        #             }
+        #         }
 
-                content = {
-                    "nodeType": "hyperlink",
-                    "content": [
-                        {
-                            "nodeType": "text",
-                            "value": element.find_all('a')[0].get_text(),
-                            "marks": [],
-                            "data": {}
-                        }
-                    ],
-                    "data": {
-                        "uri": link
-                    }
-                }
+        #     elif element.name != None and len(element.find_all('a')) > 0:
+        #         link = element.find_all('a')[0].get('href').replace(
+        #             'https://www.americanfirearms.org', '')
 
-            else:
-                content = {
-                    "data": {},
-                    "marks": [],
-                    "value": element.get_text(),
-                    "nodeType": "text"
-                }
+        #         content = {
+        #             "nodeType": "hyperlink",
+        #             "content": [
+        #                 {
+        #                     "nodeType": "text",
+        #                     "value": element.find_all('a')[0].get_text(),
+        #                     "marks": [],
+        #                     "data": {}
+        #                 }
+        #             ],
+        #             "data": {
+        #                 "uri": link
+        #             }
+        #         }
 
-            paragraph = {
-                "data": {},
-                "content": [content],
-                "nodeType": "paragraph"
-            }
+        #     else:
+        #         content = {
+        #             "data": {},
+        #             "marks": [],
+        #             "value": element.get_text(),
+        #             "nodeType": "text"
+        #         }
 
-            contents.append(paragraph)
+        #     paragraph = {
+        #         "data": {},
+        #         "content": [content],
+        #         "nodeType": "paragraph"
+        #     }
+
+        #     contents.append(paragraph)
 
         return {
             "data": {},
@@ -984,7 +989,7 @@ class Command(BaseCommand):
                 # Main
                 title = html.unescape(post.title)
                 slug = post.slug
-                excerpt = self.cleanExcerpt(post.excerpt)
+                excerpt = post.excerpt
                 body = self.convertHTMLToContentfulJson(post.body)
                 date = post.date
 
@@ -1045,7 +1050,7 @@ class Command(BaseCommand):
 
                             categoryName = html.unescape(wpCategory.name)
                             categorySlug = wpCategory.slug
-                            categoryDescription = self.cleanDescription(
+                            categoryDescription = self.cleanExcerpt(
                                 wpCategory.description)
 
                             contentfulCategoryId = contentfulCategory(
@@ -1072,7 +1077,7 @@ class Command(BaseCommand):
 
                             tagName = html.unescape(wpTag.name)
                             tagSlug = wpTag.slug
-                            tagDescription = self.cleanDescription(
+                            tagDescription = self.cleanExcerpt(
                                 wpTag.description)
 
                             contentfulTagId = contentfulTag(
