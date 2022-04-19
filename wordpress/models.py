@@ -49,8 +49,10 @@ class Post(models.Model):
         max_length=200, default='', blank=False, null=False)
     slug = models.CharField(max_length=200, null=False, blank=False)
     body = models.TextField()
-    excerpt = models.CharField(
-        max_length=5000, default='', blank=False, null=False)
+    seoTitle = models.CharField(
+        max_length=200, default='', blank=False, null=False)
+    seoDescription = models.CharField(
+        max_length=2000, default='', blank=False, null=False)
 
     date = models.CharField(max_length=200, null=False, blank=False)
 

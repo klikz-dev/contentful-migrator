@@ -25,11 +25,17 @@ class Command(BaseCommand):
 
             seo = json.loads(seoRes.text)
 
-            return seo['description']
+            return {
+                'title': seo['title'],
+                'description': seo['description']
+            }
 
         except Exception as e:
             print(e)
-            return ""
+            return {
+                'title': '',
+                'description': ''
+            }
 
     def main(self):
 
@@ -56,16 +62,21 @@ class Command(BaseCommand):
                 title = post['title']['rendered'].replace('&amp;', '&').strip()
                 slug = post['slug']
                 body = post['content']['rendered']
-                excerpt = self.seo(id)
+                seoTitle = self.seo(id)['title']
+                seoDescription = self.seo(id)['description']
                 date = post['date']
                 author = post['author']
                 categories = ", ".join(str(c) for c in post['categories'])
                 tags = ", ".join(str(t) for t in post['tags'])
                 featured_media = post['featured_media']
 
-                if excerpt == "":
-                    soup = BeautifulSoup(post['excerpt']['rendered'], 'html.parser')
-                    excerpt = soup.find('p').get_text()
+                if seoTitle == "":
+                    seoTitle = title
+
+                if seoDescription == "":
+                    soup = BeautifulSoup(
+                        post['excerpt']['rendered'], 'html.parser')
+                    seoDescription = soup.find('p').get_text()
 
                 try:
                     Post.objects.get(id=id)
@@ -78,7 +89,8 @@ class Command(BaseCommand):
                     title=title,
                     slug=slug,
                     body=body,
-                    excerpt=excerpt,
+                    seoTitle=seoTitle,
+                    seoDescription=seoDescription,
                     date=date,
                     author=author,
                     categories=categories,

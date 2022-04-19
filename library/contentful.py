@@ -473,7 +473,7 @@ def contentfulTag(name, slug, description):
         return tag['sys']['id']
 
 
-def contentfulPost(title, slug, body, excerpt, date, thumbnail, author, categories, tags):
+def contentfulPost(title, slug, body, seoTitle, seoDescription, date, thumbnail, author, categories, tags):
     url = "https://api.contentful.com/spaces/{}/environments/{}/entries".format(
         env('CONTENTFUL_SPACE_ID'), env('CONTENTFUL_ENVIRONMENT_ID'))
 
@@ -488,8 +488,11 @@ def contentfulPost(title, slug, body, excerpt, date, thumbnail, author, categori
             "body": {
                 "en-US": body
             },
-            "seo": {
-                "en-US": excerpt
+            "seoTitle": {
+                "en-US": seoTitle
+            },
+            "seoDescription": {
+                "en-US": seoDescription
             },
             "publishedAt": {
                 "en-US": date

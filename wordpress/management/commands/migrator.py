@@ -72,8 +72,8 @@ redirectedPosts = [
     "*/angelina-jolie/",
     "*/suzanna-hupp/",
     "*/manufacturers-page/",
-    "https://www.americanfirearms.org/richard-henry-lee/",
-    "https://www.americanfirearms.org/project_tag/star-firestar-m43/",
+    "*/richard-henry-lee/",
+    "*/project_tag/star-firestar-m43/",
     "*/reports-and-opinions/",
     "*/project/manurhin-mr73/",
     "*/project_category/dwm/",
@@ -125,9 +125,8 @@ redirectedPosts = [
     "*/bersa-s-a/",
     "*/alabama-gun-laws/",
     "*/magazine-capacity-101/",
-    "*/best-ar-15-rifles/links.htm",
     "*/shop/daniel-defense-dd4v7/",
-    "https://www.americanfirearms.org/shop/smithwesson-m-p-9-shield-9mm/",
+    "*/shop/smithwesson-m-p-9-shield-9mm/",
     "*/shop/canik-tp9sfx",
     "*/shop/kriss-vector-sdp/",
     "*/shop/cz-drake",
@@ -137,7 +136,7 @@ redirectedPosts = [
     "*/shop/sig-sauer-p220/",
     "*/shop/fn-503/",
     "*/shop/lee-precision-4-hole-turret-press-deluxe-kit/",
-    "https://www.americanfirearms.org/shop/iwi-tavor-ts12/",
+    "*/shop/iwi-tavor-ts12/",
     "*/shop/walther-ppk/",
     "*/shop/cz-p-07/",
     "*/shop/jts-m12ar/",
@@ -922,7 +921,8 @@ class Command(BaseCommand):
                 # Main
                 title = html.unescape(post.title)
                 slug = post.slug
-                excerpt = html.unescape(post.excerpt)
+                seoTitle = html.unescape(post.seoTitle)
+                seoDescription = html.unescape(post.seoDescription)
                 body = self.convertHTMLToContentfulJson(post.body)
                 date = post.date
 
@@ -1028,7 +1028,7 @@ class Command(BaseCommand):
                             print("No Tag for post {}".format(title))
 
                 # Create Post
-                contentfulPost(title, slug, body, excerpt,
+                contentfulPost(title, slug, body, seoTitle, seoDescription,
                                date, thumbnail, author, categories, tags)
 
                 print("--------------------------------------------------------")
