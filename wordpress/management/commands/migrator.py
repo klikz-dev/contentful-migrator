@@ -4,7 +4,7 @@ import json
 from bs4 import BeautifulSoup
 import html
 
-from library.contentful import contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAffiliate, contentfulAuthor, contentfulCategory, contentfulTag
+from library.contentful import contentfulFAQ, contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAffiliate, contentfulAuthor, contentfulCategory, contentfulTag
 from wordpress.models import Author, Category, Media, Post, Tag
 
 
@@ -171,6 +171,7 @@ class Command(BaseCommand):
             ['h1', 'h2', 'h3', 'h4', 'p', 'span', 'a', 'div', 'ol', 'ul', 'table'])
 
         # Tmp values
+        firstH2 = ""
         latestH3 = ""
 
         contents = []
@@ -210,6 +211,9 @@ class Command(BaseCommand):
                     ],
                     "nodeType": "heading-2"
                 }
+
+                if firstH2 == "":
+                    firstH2 = element.get_text().strip()
 
                 contents.append(content)
 
@@ -452,6 +456,40 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'div' and element.has_attr('class'):
+                if 'elementor-widget-accordion' in element['class']:
+                    items = element.select('.elementor-accordion-item')
+                    if len(items) == 0:
+                        continue
+
+                    accordionsData = []
+                    accordionsData.append(['Question', 'Answer'])
+
+                    for item in items:
+                        itemHead = item.select(
+                            '.elementor-tab-title')[0].get_text().strip().replace('"', '“')
+                        itemContent = item.select(
+                            '.elementor-tab-content')[0].get_text().strip().replace('"', '“')
+
+                        accordionsData.append([itemHead, itemContent])
+
+                    accordion = contentfulFAQ(firstH2, accordionsData)
+
+                    content = {
+                        "nodeType": "embedded-entry-block",
+                        "content": [],
+                        "data": {
+                            "target": {
+                                "sys": {
+                                    "id": accordion,
+                                    "type": "Link",
+                                    "linkType": "Entry"
+                                }
+                            }
+                        }
+                    }
+
+                    contents.append(content)
+
                 if 'elementor-widget-image' in element['class']:
                     try:
                         image = element.select('img')[0]['data-src']
@@ -583,12 +621,34 @@ class Command(BaseCommand):
                     continue
 
             if element.name == 'ul':
+                if element.parent.has_attr('class') and 'aawp-product__description' in element.parent['class']:
+                    continue
+
                 ulContents = []
                 for child in element.children:
                     liContents = []
                     try:
                         for grandchild in child.children:
-                            if grandchild.name != None and len(grandchild.find_all('a')) > 0:
+                            if grandchild.name == 'a':
+                                link = grandchild.get('href').replace(
+                                    'https://www.americanfirearms.org', '')
+
+                                liContent = {
+                                    "nodeType": "hyperlink",
+                                    "content": [
+                                        {
+                                            "nodeType": "text",
+                                            "value": grandchild.get_text(),
+                                            "marks": [],
+                                            "data": {}
+                                        }
+                                    ],
+                                    "data": {
+                                        "uri": link
+                                    }
+                                }
+
+                            elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
                                 link = grandchild.find_all('a')[0].get('href').replace(
                                     'https://www.americanfirearms.org', '')
 
@@ -655,6 +715,9 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'ol':
+                if element.parent.has_attr('class') and 'aawp-product__description' in element.parent['class']:
+                    continue
+
                 olContents = []
                 for child in element.children:
                     liContents = []
@@ -897,6 +960,7 @@ class Command(BaseCommand):
         print('Uploading posts to Contentful...')
 
         posts = Post.objects.all()
+        # posts = Post.objects.filter(slug='best-ar-10-rifles')
         for post in posts:
             try:
                 print("--------------------------------------------------------")

@@ -251,6 +251,44 @@ def contentfulScorecard(name, tableData):
         return scorecard['sys']['id']
 
 
+def contentfulFAQ(name, tableData):
+    url = "https://api.contentful.com/spaces/{}/environments/{}/entries".format(
+        env('CONTENTFUL_SPACE_ID'), env('CONTENTFUL_ENVIRONMENT_ID'))
+
+    payload = json.dumps({
+        "fields": {
+            "name": {
+                "en-US": name
+            },
+            "body": {
+                "en-US": {
+                    "tableData": tableData
+                }
+            },
+        }
+    })
+
+    headers = {
+        'X-Contentful-Content-Type': 'faq',
+        'Authorization': 'Bearer {}'.format(env('CONTENTFUL_MANAGEMENT_TOKEN')),
+        'Content-Type': 'application/json'
+    }
+
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    if response.status_code != 201:
+        print("Creating FAQ failed")
+        print(response.text)
+        return ""
+
+    else:
+        print("FAQ creation successful. Name: {}".format(name))
+        faq = json.loads(response.text)
+
+        publishEntry(faq['sys']['id'])
+        return faq['sys']['id']
+
+
 def contentfulEmbed(src):
     url = "https://api.contentful.com/spaces/{}/environments/{}/entries".format(
         env('CONTENTFUL_SPACE_ID'), env('CONTENTFUL_ENVIRONMENT_ID'))
