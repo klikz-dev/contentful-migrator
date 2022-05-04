@@ -227,6 +227,9 @@ class Command(BaseCommand):
                 if "The Latest" in element.get_text() and "Reviews:" in element.get_text():
                     continue
 
+                if "More on" in element.get_text() and ":" in element.get_text():
+                    continue
+
                 content = {
                     "data": {},
                     "content": [
@@ -282,6 +285,9 @@ class Command(BaseCommand):
 
                 parent = element.parent
                 if parent.has_attr('class') and 'elementor-post__excerpt' in parent['class']:
+                    continue
+
+                if parent.has_attr('class') and 'elementor-tab-content' in parent['class']:
                     continue
 
                 span = element.find('span')
