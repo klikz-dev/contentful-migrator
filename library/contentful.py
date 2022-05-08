@@ -550,6 +550,39 @@ def contentfulPost(title, slug, body, seoTitle, seoDescription, date, thumbnail,
         }
     })
 
+    if thumbnail == {}:
+        payload = json.dumps({
+            "fields": {
+                "title": {
+                    "en-US": title
+                },
+                "slug": {
+                    "en-US": slug
+                },
+                "body": {
+                    "en-US": body
+                },
+                "seoTitle": {
+                    "en-US": seoTitle
+                },
+                "seoDescription": {
+                    "en-US": seoDescription
+                },
+                "publishedAt": {
+                    "en-US": date
+                },
+                "author": {
+                    "en-US": author
+                },
+                "categories": {
+                    "en-US": categories
+                },
+                "tags": {
+                    "en-US": tags
+                }
+            }
+        })
+
     headers = {
         'X-Contentful-Content-Type': 'post',
         'Authorization': 'Bearer {}'.format(env('CONTENTFUL_MANAGEMENT_TOKEN')),

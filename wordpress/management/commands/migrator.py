@@ -7,153 +7,6 @@ import html
 from library.contentful import contentfulFAQ, contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAffiliate, contentfulAuthor, contentfulCategory, contentfulTag
 from wordpress.models import Author, Category, Media, Post, Tag
 
-
-redirectedPosts = [
-    "*/business-directory-2/*",
-    "*/statistics.php*",
-    "*/downloads/*",
-    "*/history.php*",
-    "*/manufacturers.php*",
-    "*/safety.php*",
-    "*/project*/sig*",
-    "*/project*/bersa*",
-    "*/project*/*-safe*",
-    "*/project/full-auto-conversion-of-the-sks-rifle/",
-    "*/reports.php*",
-    "*/glossary.php*",
-    "*/project*/colt*",
-    "*/gun-safes-page/",
-    "*what-is-a-firearm-page",
-    "*beginners-corner-page/",
-    "*/safety-page/",
-    "*/firearm-training-page/",
-    "*/firearms-glossary-page/",
-    "*/links-page",
-    "*/statistics-page",
-    "*reports-and-opinions-page",
-    "*/books-page/",
-    "*/project/encyclopedia-of-modern-firearms-parts-and-assembly/",
-    "*/project/stack-on",
-    "*/project/fn-bda*",
-    "*/tag/*",
-    "*/ammunition-manufacturers-page/",
-    "*project/sw1911sc*",
-    "*/project/firearms-inventory-log-book/",
-    "*/gun-history-page*",
-    "*/laws.php",
-    "*/preppers-underground-guide-to-improvised-weapons-how-to-protect-yourself-without-a-firearm-using-everyday-items/",
-    "*project/pieper*",
-    "*project_category/belgium*",
-    "*/beretta.php*",
-    "*/join.php",
-    "*/philosophy*",
-    "*www.americanfirearms.org/images/Chart__big.gif",
-    "*/project/the-gun-digest-book-of-firearms*",
-    "*/gun-safes/-gcdg*",
-    "*/winixson-12-5-electronic-digital-lock-keypad-safe-box-cash-jewelry-gun-safe-black-new/",
-    "*/project_category/anciens*",
-    "*/guns-list-specifications/",
-    "*/para-ordnance*",
-    "*/ruger-firearms/-lite-hawg",
-    "*/project/the-gun-encyclopedia/",
-    "*/noah-webster-on-the-second-amendment/",
-    "*/a-quaker-said-what/",
-    "*/patrick-henry/",
-    "*star-model*",
-    "*/forums*",
-    "*/dalai-lama-but-if-someone-has-a-gun-and-is-trying-to-kill-you-it-would-be-reasonable-to-shoot-back-with-your-own-gun/",
-    "*/best-brass-catcher-reviews/military.html",
-    "*/project/standard-catalog-of-colt-firearms/",
-    "*/wp-content/uploads/2013/01/guns_public_health.pdf",
-    "*/2nd-amendment-quotes/",
-    "*/nra/",
-    "*/communications-center/",
-    "*/reccomended-reading/",
-    "*/angelina-jolie/",
-    "*/suzanna-hupp/",
-    "*/manufacturers-page/",
-    "*/richard-henry-lee/",
-    "*/project_tag/star-firestar-m43/",
-    "*/reports-and-opinions/",
-    "*/project/manurhin-mr73/",
-    "*/project_category/dwm/",
-    "*/project_tag/pieper-bayard-1923/",
-    "*/project/performance-center-mp9l-pro-series-c-o-r-e/",
-    "*/project/modelo-1905/",
-    "*/project_tag/fn-bda-380/",
-    "*/project/goplus-2-key-6-gun-rifle-storage-cabinet-case/",
-    "*/project/glock-reference-guide/",
-    "*/project/performance-center-sw1911-pro-series/",
-    "*/project/sw1911ta-e-series-tactical-accessory-rail/",
-    "*/the-2nd-amendment-complete-text/",
-    "*/george-mason-and-the-2nd-amendment/",
-    "*/thomas-jefferson-in-regards-to-the-second-amendment/",
-    "*/jeff-cooper-and-the-second-amendment/",
-    "*/fun-fact-about-homicide-rates-and-carry-laws/",
-    "*/330/",
-    "*/gun-control-laws-do-not-work/",
-    "*/only-certain-weapons-allowed-no/",
-    "*/who-is-the-militia-we-are/",
-    "*/411/",
-    "*/they-are-the-same/",
-    "*/tom-clancy/",
-    "*/richard-henry-lee/",
-    "*/police-do-not-have-a-constitutional-duty-to-protect/",
-    "*/georgia-supreme-court/",
-    "*/thomas-jefferson/",
-    "*/hve-you-seen-this-man/",
-    "*/wei-boyang/",
-    "*/white-house-executive-order/",
-    "*/standard-catalog-of-smith-wesson/",
-    "*/project/the-history-of-guns/",
-    "/rate-of-fire/",
-    "*viagra*",
-    "*prescription*",
-    "*pharm*",
-    "*Clomipramine*",
-    "*Pharmacy*",
-    "*MayoClinic*",
-    "*detroitchicago*",
-    "*Cannabis*",
-    "*hemp*",
-    "*college*",
-    "*resume*",
-    "*marketing*",
-    "*/books/",
-    "*/sw1911sc-e-series-round-butt-scandium-frame/",
-    "*/wound-ballistics-data/",
-    "*/bersa-s-a/",
-    "*/alabama-gun-laws/",
-    "*/magazine-capacity-101/",
-    "*/shop/daniel-defense-dd4v7/",
-    "*/shop/smithwesson-m-p-9-shield-9mm/",
-    "*/shop/canik-tp9sfx",
-    "*/shop/kriss-vector-sdp/",
-    "*/shop/cz-drake",
-    "*/hi-point-carbine/",
-    "*/shop/cz-sharp-tail/",
-    "*/shop/beretta-px4-storm/",
-    "*/shop/sig-sauer-p220/",
-    "*/shop/fn-503/",
-    "*/shop/lee-precision-4-hole-turret-press-deluxe-kit/",
-    "*/shop/iwi-tavor-ts12/",
-    "*/shop/walther-ppk/",
-    "*/shop/cz-p-07/",
-    "*/shop/jts-m12ar/",
-    "*/shop/ruger-gp100/",
-    "*/shop/stag-arms-stag-15/",
-    "*/shop/stoeger-coach-gun/",
-    "*/shop/auto-ordnance-1911",
-    "*/shop/diamondback-db15/",
-    "*/shop/benelli-m4",
-    "/shop/benelli-m4-tactical",
-    "*/shop/remington-870-express",
-    "*/shop/benelli-m4-m1014",
-    "*/shop/ruger-10-22-bx-trigger/",
-    "*/ruger-firearms/"
-]
-
-
 class Command(BaseCommand):
     help = 'Get WordPress Contents'
 
@@ -966,20 +819,12 @@ class Command(BaseCommand):
         print('Uploading posts to Contentful...')
 
         posts = Post.objects.all()
-        # posts = Post.objects.filter(slug='best-ar-10-rifles')
+        # posts = Post.objects.filter(
+        #     slug='what-happened-when-washington-dc-banned-guns')
+
         for post in posts:
             try:
                 print("--------------------------------------------------------")
-
-                # Redirected Posts
-                redirected = False
-                for redirectedPost in redirectedPosts:
-                    if post.slug in redirectedPost:
-                        redirected = True
-
-                if redirected:
-                    print("Post {} redirected to another page".format(post.title))
-                    continue
 
                 if 'et_pb_section' in post.body or 'bb_built' in post.body or 'et_pb_row' in post.body:
                     print("Post {} contains buggy html".format(post.title))
