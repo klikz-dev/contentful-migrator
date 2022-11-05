@@ -28,7 +28,7 @@ class MediaAdmin(admin.ModelAdmin):
 
 
 class PostAdmin(admin.ModelAdmin):
-    fields = ['id', 'title', 'slug', 'body', 'excerpt',
+    fields = ['id', 'title', 'slug', 'body', 
               'date', 'author', 'categories', 'tags', 'featured_media']
     list_display = ['id', 'title']
     search_fields = ['id', 'title']
