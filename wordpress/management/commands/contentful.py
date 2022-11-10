@@ -7,6 +7,7 @@ import html
 from library.contentful import contentfulFAQ, contentfulImage, contentfulCTA, contentfulPost, contentfulTable, contentfulScorecard, contentfulEmbed, contentfulAffiliate, contentfulAuthor, contentfulCategory, contentfulTag
 from wordpress.models import Author, Category, Media, Post, Tag
 
+
 class Command(BaseCommand):
     help = 'Get WordPress Contents'
 
