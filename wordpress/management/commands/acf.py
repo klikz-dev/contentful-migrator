@@ -495,6 +495,21 @@ class Command(BaseCommand):
         }
 
     def main(self):
+        # Getting Existing Post slugs
+        slugs = []
+        for i in range(1, 10):
+            wpPosts = requests.request(
+                "GET",
+                "https://firearms-wp.klikz.us/wp-json/wp/v2/posts?page={}&per_page=100".format(
+                    i)
+            )
+            if wpPosts.status_code != 200:
+                break
+
+            for wpPost in json.loads(wpPosts.text):
+                print(wpPost['slug'])
+                slugs.append(wpPost['slug'])
+
         # Process All Posts
         posts = Post.objects.all()
 
@@ -509,15 +524,9 @@ class Command(BaseCommand):
                 continue
             #################################
 
-            # Skip Existing Posts
-            wpPosts = requests.request(
-                "GET",
-                "https://firearms-wp.klikz.us/wp-json/wp/v2/posts?slug={}".format(
-                    post.slug)
-            )
-            if len(json.loads(wpPosts.text)) > 0:
-                print("Ignoring Post {}. Already Exist. ID: {}".format(
-                    post.slug, json.loads(wpPosts.text)[0]['id']))
+            # Skip existing posts
+            if post.slug in slugs:
+                print("Ignoring Post {}".format(post.slug))
                 continue
             #################################
 
