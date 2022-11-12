@@ -331,26 +331,29 @@ class Command(BaseCommand):
                         liContents = child
                     else:
                         for grandchild in child.children:
-                            if grandchild.name == 'a':
-                                link = grandchild.get('href').replace(
-                                    'https://www.americanfirearms.org', '')
+                            try:
+                                if grandchild.name == 'a':
+                                    link = grandchild.get('href').replace(
+                                        'https://www.americanfirearms.org', '')
 
-                                liContent = "<a href='{}'>{}</a>".format(
-                                    link, grandchild.get_text())
+                                    liContent = "<a href='{}'>{}</a>".format(
+                                        link, grandchild.get_text())
 
-                            elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
-                                link = grandchild.find_all('a')[0].get('href').replace(
-                                    'https://www.americanfirearms.org', '')
+                                elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
+                                    link = grandchild.find_all('a')[0].get('href').replace(
+                                        'https://www.americanfirearms.org', '')
 
-                                liContent = "<a href='{}'>{}</a>".format(
-                                    link, grandchild.find_all('a')[0].get_text())
+                                    liContent = "<a href='{}'>{}</a>".format(
+                                        link, grandchild.find_all('a')[0].get_text())
 
-                            elif grandchild.name == 'strong':
-                                liContent = "<strong>{}</strong>".format(
-                                    grandchild.get_text())
+                                elif grandchild.name == 'strong':
+                                    liContent = "<strong>{}</strong>".format(
+                                        grandchild.get_text())
 
-                            else:
-                                liContent = grandchild.get_text()
+                                else:
+                                    liContent = grandchild.get_text()
+                            except:
+                                continue
 
                             liContents += liContent
 
@@ -381,28 +384,31 @@ class Command(BaseCommand):
                         liContents = child
                     else:
                         for grandchild in child.children:
-                            if grandchild.name == 'a':
-                                link = grandchild.get('href').replace(
-                                    'https://www.americanfirearms.org', '')
+                            try:
+                                if grandchild.name == 'a':
+                                    link = grandchild.get('href').replace(
+                                        'https://www.americanfirearms.org', '')
 
-                                liContent = "<a href='{}'>{}</a>".format(
-                                    link, grandchild.get_text())
+                                    liContent = "<a href='{}'>{}</a>".format(
+                                        link, grandchild.get_text())
 
-                            elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
-                                link = grandchild.find_all('a')[0].get('href').replace(
-                                    'https://www.americanfirearms.org', '')
+                                elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
+                                    link = grandchild.find_all('a')[0].get('href').replace(
+                                        'https://www.americanfirearms.org', '')
 
-                                liContent = "<a href='{}'>{}</a>".format(
-                                    link, grandchild.find_all('a')[0].get_text())
+                                    liContent = "<a href='{}'>{}</a>".format(
+                                        link, grandchild.find_all('a')[0].get_text())
 
-                            elif grandchild.name == 'strong':
-                                liContent = "<strong>{}</strong>".format(
-                                    grandchild.get_text())
+                                elif grandchild.name == 'strong':
+                                    liContent = "<strong>{}</strong>".format(
+                                        grandchild.get_text())
 
-                            else:
-                                liContent = grandchild.get_text()
+                                else:
+                                    liContent = grandchild.get_text()
 
-                            liContents += liContent
+                                liContents += liContent
+                            except:
+                                continue
 
                     if "{}".format(liContents) == "":
                         continue
