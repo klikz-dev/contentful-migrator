@@ -589,6 +589,16 @@ class Command(BaseCommand):
             except Media.DoesNotExist:
                 featuredMediaId = 0
 
+            author = 4
+            if post.author == 10 or post.author == 1: # Michael
+                author = 4
+            if post.author == 8: # Patrick
+                author = 7
+            if post.author == 7: # Megan
+                author = 6
+            if post.author == 4: # Kenzie
+                author = 5
+
             # Create Post
             postId = self.wpPost({
                 "slug": slug,
@@ -599,7 +609,8 @@ class Command(BaseCommand):
                 "categories": categories,
                 "tags": tags,
                 "featured_media": featuredMediaId,
-                "content": content
+                "content": content,
+                "author": author
             })
 
             print("Successfully Created a Post {}".format(postId))
