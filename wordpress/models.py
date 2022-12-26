@@ -49,9 +49,7 @@ class Post(models.Model):
         max_length=200, default='', blank=False, null=False)
     slug = models.CharField(max_length=200, null=False, blank=False)
     body = models.TextField()
-    seoTitle = models.CharField(
-        max_length=200, default='', blank=False, null=False)
-    seoDescription = models.CharField(
+    excerpt = models.CharField(
         max_length=2000, default='', blank=False, null=False)
 
     date = models.CharField(max_length=200, null=False, blank=False)
@@ -62,4 +60,22 @@ class Post(models.Model):
     featured_media = models.CharField(max_length=200, null=True, blank=True)
 
     def __str__(self):
-        return str(self.id)
+        return str(self.title)
+
+
+class Page(models.Model):
+    id = models.IntegerField(primary_key=True, null=False, blank=False)
+    title = models.CharField(
+        max_length=200, default='', blank=False, null=False)
+    slug = models.CharField(max_length=200, null=False, blank=False)
+    body = models.TextField()
+    excerpt = models.CharField(
+        max_length=2000, default='', blank=False, null=False)
+
+    date = models.CharField(max_length=200, null=False, blank=False)
+
+    author = models.CharField(max_length=200, null=True, blank=True)
+    featured_media = models.CharField(max_length=200, null=True, blank=True)
+
+    def __str__(self):
+        return str(self.title)

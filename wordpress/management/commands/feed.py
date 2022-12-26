@@ -5,7 +5,7 @@ import json
 
 from bs4 import BeautifulSoup
 
-from wordpress.models import Author, Category, Media, Post, Tag
+from wordpress.models import Author, Category, Media, Post, Tag, Page
 
 
 class Command(BaseCommand):
@@ -38,15 +38,15 @@ class Command(BaseCommand):
             }
 
     def main(self):
-
         Author.objects.all().delete()
         Category.objects.all().delete()
         Tag.objects.all().delete()
         Media.objects.all().delete()
         Post.objects.all().delete()
+        Page.objects.all().delete()
 
         print('Collecting All posts data...')
-        for page in range(1, 50):
+        for page in range(1, 60):
             print("Page {}".format(page))
 
             postsRes = requests.request(
@@ -62,21 +62,18 @@ class Command(BaseCommand):
                 title = post['title']['rendered'].replace('&amp;', '&').strip()
                 slug = post['slug']
                 body = post['content']['rendered']
-                seoTitle = self.seo(id)['title']
-                seoDescription = self.seo(id)['description']
                 date = post['date']
                 author = post['author']
                 categories = ", ".join(str(c) for c in post['categories'])
                 tags = ", ".join(str(t) for t in post['tags'])
                 featured_media = post['featured_media']
 
-                if seoTitle == "":
-                    seoTitle = title
-
-                if seoDescription == "":
-                    soup = BeautifulSoup(
-                        post['excerpt']['rendered'], 'html.parser')
-                    seoDescription = soup.find('p').get_text()
+                soup = BeautifulSoup(
+                    post['excerpt']['rendered'], 'html.parser')
+                try:
+                    excerpt = soup.find('p').get_text()
+                except:
+                    excerpt = ''
 
                 try:
                     Post.objects.get(id=id)
@@ -88,13 +85,57 @@ class Command(BaseCommand):
                     id=id,
                     title=title,
                     slug=slug,
+                    excerpt=excerpt,
                     body=body,
-                    seoTitle=seoTitle,
-                    seoDescription=seoDescription,
                     date=date,
                     author=author,
                     categories=categories,
                     tags=tags,
+                    featured_media=featured_media
+                )
+
+        print('Collecting All pages data...')
+        for page in range(1, 7):
+            print("Page {}".format(page))
+
+            pagesRes = requests.request(
+                "GET", "https://www.americanfirearms.org/wp-json/wp/v2/pages?per_page=10&page={}".format(page), headers={}, data={})
+
+            if pagesRes.status_code != 200:
+                break
+
+            pages = json.loads(pagesRes.text)
+
+            for page in pages:
+                id = page['id']
+                title = page['title']['rendered'].replace('&amp;', '&').strip()
+                slug = page['slug']
+                body = page['content']['rendered']
+                date = page['date']
+                author = page['author']
+                featured_media = page['featured_media']
+
+                soup = BeautifulSoup(
+                    page['excerpt']['rendered'], 'html.parser')
+                try:
+                    excerpt = soup.find('p').get_text()
+                except:
+                    excerpt = ''
+
+                try:
+                    Page.objects.get(id=id)
+                    continue
+                except Page.DoesNotExist:
+                    pass
+
+                Page.objects.create(
+                    id=id,
+                    title=title,
+                    slug=slug,
+                    excerpt=excerpt,
+                    body=body,
+                    date=date,
+                    author=author,
                     featured_media=featured_media
                 )
 

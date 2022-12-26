@@ -7,7 +7,7 @@ import html
 import requests
 import base64
 
-from wordpress.models import Author, Category, Media, Post, Tag
+from wordpress.models import Author, Category, Media, Post, Tag, Page
 
 
 class Command(BaseCommand):
@@ -19,6 +19,48 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         if "main" in options['functions']:
             self.main()
+
+    def convertHTMLToPageACFJson(self, content):
+        soup = BeautifulSoup(content, 'html.parser')
+
+        elements = soup.find_all(
+            ['h2', 'h3', 'h4', 'p', 'span', 'a', 'div', 'ol', 'ul', 'table'])
+
+        contents = []
+        for element in elements:
+            if element.name == 'div' and element.has_attr('class'):
+                if 'elementor-widget-wrap' in element['class']:
+                    title = ""
+                    text = ""
+                    links = []
+
+                    for child in element.children:
+                        if 'elementor-widget-heading' in child['class']:
+                            title = child.select(
+                                'h2.elementor-heading-title')[0].get_text().strip()
+
+                        if 'elementor-widget-text-editor' in child['class']:
+                            text = child.get_text()
+
+                        if 'elementor-inner-section' in child['class']:
+                            linksArr = child.find_all('a')
+                            for linkEle in linksArr:
+                                link = linkEle.get('href').replace(
+                                    'https://www.americanfirearms.org', '')
+                                text = linkEle.get_text().strip()
+                                links.append({link: link, text: text})
+
+                    content = {
+                        "acf_fc_layout": "faq",
+                        "title": title,
+                        "text": text,
+                        "links": links
+                    }
+
+                    contents.append(content)
+
+        print(contents)
+        return contents
 
     def convertHTMLToACFJson(self, content):
         soup = BeautifulSoup(content, 'html.parser')
@@ -590,13 +632,13 @@ class Command(BaseCommand):
                 featuredMediaId = 0
 
             author = 4
-            if post.author == 10 or post.author == 1: # Michael
+            if post.author == 10 or post.author == 1:  # Michael
                 author = 4
-            if post.author == 8: # Patrick
+            if post.author == 8:  # Patrick
                 author = 7
-            if post.author == 7: # Megan
+            if post.author == 7:  # Megan
                 author = 6
-            if post.author == 4: # Kenzie
+            if post.author == 4:  # Kenzie
                 author = 5
 
             # Create Post
@@ -614,6 +656,53 @@ class Command(BaseCommand):
             })
 
             print("Successfully Created a Post {}".format(postId))
+
+        # Process All Pages
+        # pages = Page.objects.all()
+
+        # Process a specifi post
+        pages = Page.objects.filter(slug="guide-to-all-things-ar")
+
+        for page in pages:
+            print("--------------------------------------------------------")
+
+            print("Processing Page {}".format(page.slug))
+
+            title = html.unescape(page.title)
+            content = html.unescape(page.seoDescription)
+            slug = page.slug
+            date = page.date
+
+            body = self.convertHTMLToPageACFJson(page.body)
+            acf = body['acf']
+            if body['description'] != "":
+                content = body['description']
+
+            # Thumbnail
+            try:
+                featured_media = Media.objects.get(id=page.featured_media)
+
+                mediaLink = featured_media.link
+                mediaAlt = featured_media.alt
+                if mediaAlt == "":
+                    mediaAlt = title
+
+                featuredMediaId = self.wpMedia(mediaLink, mediaAlt)
+            except Media.DoesNotExist:
+                featuredMediaId = 0
+
+            # Create Page
+            pageId = self.wpPage({
+                "slug": slug,
+                "title": title,
+                "status": "publish",
+                "acf": acf,
+                "date": date,
+                "featured_media": featuredMediaId,
+                "content": content,
+            })
+
+            print("Successfully Created a Page {}".format(pageId))
 
     def wpAuth(self):
         credentials = 'admin:CqDQ 7EPD vizZ s14b 5pEx vP6i'
@@ -762,4 +851,48 @@ class Command(BaseCommand):
                 print(e)
                 print(response.text)
                 print("Failed creating post")
+                return 0
+
+    def wpPage(self, data):
+        print("Creating Page {}".format(data['slug']))
+
+        pages = requests.request(
+            "GET",
+            "https://firearms-wp.klikz.us/wp-json/wp/v2/pages?slug={}".format(
+                data['slug'])
+        )
+
+        if len(json.loads(pages.text)) > 0:
+            try:
+                pageId = json.loads(pages.text)[0]['id']
+                print("Page: {} already exists. Id: {}".format(
+                    data['title'], pageId))
+
+                response = requests.request(
+                    "PUT",
+                    "https://firearms-wp.klikz.us/wp-json/wp/v2/pages/{}".format(pageId), headers=self.wpAuth(),
+                    data=json.dumps(data)
+                )
+                pageId = json.loads(response.text)['id']
+                print("Updated Page {}".format(pageId))
+                return pageId
+            except Exception as e:
+                print(e)
+                print(response.text)
+                print("Failed updating page")
+                return 0
+        else:
+            try:
+                response = requests.request(
+                    "POST",
+                    "https://firearms-wp.klikz.us/wp-json/wp/v2/pages", headers=self.wpAuth(),
+                    data=json.dumps(data)
+                )
+                pageId = json.loads(response.text)['id']
+                print("Created Page {}".format(pageId))
+                return pageId
+            except Exception as e:
+                print(e)
+                print(response.text)
+                print("Failed creating Page")
                 return 0
