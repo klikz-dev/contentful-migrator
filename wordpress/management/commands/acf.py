@@ -23,43 +23,45 @@ class Command(BaseCommand):
     def convertHTMLToPageACFJson(self, content):
         soup = BeautifulSoup(content, 'html.parser')
 
-        elements = soup.find_all(
-            ['h2', 'h3', 'h4', 'p', 'span', 'a', 'div', 'ol', 'ul', 'table'])
+        elements = soup.find_all(['div'])
 
         contents = []
         for element in elements:
-            if element.name == 'div' and element.has_attr('class'):
-                if 'elementor-widget-wrap' in element['class']:
-                    title = ""
-                    text = ""
-                    links = []
+            if element.has_attr('class') and 'elementor-widget-wrap' in element['class']:
+                title = ""
+                text = ""
+                links = []
 
-                    for child in element.children:
-                        if 'elementor-widget-heading' in child['class']:
-                            title = child.select(
-                                'h2.elementor-heading-title')[0].get_text().strip()
+                if len(element.select('h2.elementor-heading-title')) > 0:
+                    title = element.select(
+                        'h2.elementor-heading-title')[0].get_text().strip()
 
-                        if 'elementor-widget-text-editor' in child['class']:
-                            text = child.get_text()
+                if len(element.select('h2.elementor-heading-title')) > 0:
+                    subtitle = element.select(
+                        'h2.elementor-heading-title')[0].get_text().strip()
 
-                        if 'elementor-inner-section' in child['class']:
-                            linksArr = child.find_all('a')
-                            for linkEle in linksArr:
-                                link = linkEle.get('href').replace(
-                                    'https://www.americanfirearms.org', '')
-                                text = linkEle.get_text().strip()
-                                links.append({link: link, text: text})
+                if len(element.select('.elementor-widget-text-editor')) > 0:
+                    text = element.select(
+                        '.elementor-widget-text-editor')[0].get_text().replace("\n", "").strip()
 
+                if len(element.select('.elementor-inner-section')) > 0:
+                    linksArr = element.select(
+                        '.elementor-inner-section')[0].find_all('a')
+                    for linkEle in linksArr:
+                        link = linkEle.get('href').replace(
+                            'https://www.americanfirearms.org', '')
+                        label = linkEle.get_text().strip()
+                        links.append({"link": link, "text": label})
+
+                if title and text and links:
                     content = {
-                        "acf_fc_layout": "faq",
+                        "acf_fc_layout": "category_section",
                         "title": title,
                         "text": text,
                         "links": links
                     }
-
                     contents.append(content)
 
-        print(contents)
         return contents
 
     def convertHTMLToACFJson(self, content):
@@ -581,7 +583,7 @@ class Command(BaseCommand):
             print("Processing Post {}".format(post.slug))
 
             title = html.unescape(post.title)
-            content = html.unescape(post.seoDescription)
+            content = html.unescape(post.excerpt)
             slug = post.slug
             date = post.date
 
@@ -658,25 +660,30 @@ class Command(BaseCommand):
             print("Successfully Created a Post {}".format(postId))
 
         # Process All Pages
-        # pages = Page.objects.all()
+        pages = Page.objects.all()
 
         # Process a specifi post
-        pages = Page.objects.filter(slug="guide-to-all-things-ar")
+        # pages = Page.objects.filter(slug="guide-to-all-things-ar")
 
         for page in pages:
+            if page.slug == "guide-to-all-things-ar" or page.slug == "firearm-basics" or page.slug == "shotgun-reviews":
+                pass
+            else:
+                continue
+
             print("--------------------------------------------------------")
 
             print("Processing Page {}".format(page.slug))
 
             title = html.unescape(page.title)
-            content = html.unescape(page.seoDescription)
+            content = html.unescape(page.excerpt)
             slug = page.slug
             date = page.date
 
             body = self.convertHTMLToPageACFJson(page.body)
-            acf = body['acf']
-            if body['description'] != "":
-                content = body['description']
+            acf = {
+                "content": body
+            }
 
             # Thumbnail
             try:
