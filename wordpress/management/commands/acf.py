@@ -547,18 +547,18 @@ class Command(BaseCommand):
     def main(self):
         # Getting Existing Post slugs
         slugs = []
-        for i in range(1, 10):
-            wpPosts = requests.request(
-                "GET",
-                "https://firearms-wp.klikz.us/wp-json/wp/v2/posts?page={}&per_page=100".format(
-                    i)
-            )
-            if wpPosts.status_code != 200:
-                break
+        # for i in range(1, 10):
+        #     wpPosts = requests.request(
+        #         "GET",
+        #         "https://firearms-wp.klikz.us/wp-json/wp/v2/posts?page={}&per_page=100".format(
+        #             i)
+        #     )
+        #     if wpPosts.status_code != 200:
+        #         break
 
-            for wpPost in json.loads(wpPosts.text):
-                print(wpPost['slug'])
-                slugs.append(wpPost['slug'])
+        #     for wpPost in json.loads(wpPosts.text):
+        #         print(wpPost['slug'])
+        #         slugs.append(wpPost['slug'])
 
         # Process All Posts
         posts = Post.objects.all()
@@ -660,56 +660,56 @@ class Command(BaseCommand):
             print("Successfully Created a Post {}".format(postId))
 
         # Process All Pages
-        pages = Page.objects.all()
+        # pages = Page.objects.all()
 
         # Process a specifi post
         # pages = Page.objects.filter(slug="guide-to-all-things-ar")
 
-        for page in pages:
-            if page.slug == "guide-to-all-things-ar" or page.slug == "firearm-basics" or page.slug == "shotgun-reviews":
-                pass
-            else:
-                continue
+        # for page in pages:
+        #     if page.slug == "guide-to-all-things-ar" or page.slug == "firearm-basics" or page.slug == "shotgun-reviews":
+        #         pass
+        #     else:
+        #         continue
 
-            print("--------------------------------------------------------")
+        #     print("--------------------------------------------------------")
 
-            print("Processing Page {}".format(page.slug))
+        #     print("Processing Page {}".format(page.slug))
 
-            title = html.unescape(page.title)
-            content = html.unescape(page.excerpt)
-            slug = page.slug
-            date = page.date
+        #     title = html.unescape(page.title)
+        #     content = html.unescape(page.excerpt)
+        #     slug = page.slug
+        #     date = page.date
 
-            body = self.convertHTMLToPageACFJson(page.body)
-            acf = {
-                "content": body
-            }
+        #     body = self.convertHTMLToPageACFJson(page.body)
+        #     acf = {
+        #         "content": body
+        #     }
 
-            # Thumbnail
-            try:
-                featured_media = Media.objects.get(id=page.featured_media)
+        #     # Thumbnail
+        #     try:
+        #         featured_media = Media.objects.get(id=page.featured_media)
 
-                mediaLink = featured_media.link
-                mediaAlt = featured_media.alt
-                if mediaAlt == "":
-                    mediaAlt = title
+        #         mediaLink = featured_media.link
+        #         mediaAlt = featured_media.alt
+        #         if mediaAlt == "":
+        #             mediaAlt = title
 
-                featuredMediaId = self.wpMedia(mediaLink, mediaAlt)
-            except Media.DoesNotExist:
-                featuredMediaId = 0
+        #         featuredMediaId = self.wpMedia(mediaLink, mediaAlt)
+        #     except Media.DoesNotExist:
+        #         featuredMediaId = 0
 
-            # Create Page
-            pageId = self.wpPage({
-                "slug": slug,
-                "title": title,
-                "status": "publish",
-                "acf": acf,
-                "date": date,
-                "featured_media": featuredMediaId,
-                "content": content,
-            })
+        #     # Create Page
+        #     pageId = self.wpPage({
+        #         "slug": slug,
+        #         "title": title,
+        #         "status": "publish",
+        #         "acf": acf,
+        #         "date": date,
+        #         "featured_media": featuredMediaId,
+        #         "content": content,
+        #     })
 
-            print("Successfully Created a Page {}".format(pageId))
+        #     print("Successfully Created a Page {}".format(pageId))
 
     def wpAuth(self):
         credentials = 'admin:CqDQ 7EPD vizZ s14b 5pEx vP6i'
@@ -757,7 +757,6 @@ class Command(BaseCommand):
 
         except Exception as e:
             print(e)
-            print(response.text)
             print("Failed creating category")
             return 0
 
@@ -788,7 +787,6 @@ class Command(BaseCommand):
 
         except Exception as e:
             print(e)
-            print(response.text)
             print("Failed creating tag")
             return 0
 
@@ -812,7 +810,6 @@ class Command(BaseCommand):
                 return imageId
             except Exception as e:
                 print(e)
-                print(response.text)
                 print("Failed image upload")
                 return 0
 
@@ -841,7 +838,6 @@ class Command(BaseCommand):
                 return postId
             except Exception as e:
                 print(e)
-                print(response.text)
                 print("Failed updating post")
                 return 0
         else:
@@ -856,7 +852,6 @@ class Command(BaseCommand):
                 return postId
             except Exception as e:
                 print(e)
-                print(response.text)
                 print("Failed creating post")
                 return 0
 
@@ -885,7 +880,6 @@ class Command(BaseCommand):
                 return pageId
             except Exception as e:
                 print(e)
-                print(response.text)
                 print("Failed updating page")
                 return 0
         else:
@@ -900,6 +894,5 @@ class Command(BaseCommand):
                 return pageId
             except Exception as e:
                 print(e)
-                print(response.text)
                 print("Failed creating Page")
                 return 0
