@@ -20,6 +20,9 @@ class Command(BaseCommand):
         if "main" in options['functions']:
             self.main()
 
+        if "updateAuthor" in options['functions']:
+            self.updateAuthor()
+
     def convertHTMLToPageACFJson(self, content):
         soup = BeautifulSoup(content, 'html.parser')
 
@@ -73,7 +76,7 @@ class Command(BaseCommand):
         contents = []
         for element in elements:
             if element.name == 'h2':
-                if element.get_text() == "":
+                if element.get_text().strip() == "":
                     continue
 
                 content = {
@@ -84,16 +87,16 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'h3':
-                if element.get_text() == "":
+                if element.get_text().strip() == "":
                     continue
 
                 if element.has_attr('class') and 'elementor-cta__title' in element['class']:
                     continue
 
-                if "The Latest" in element.get_text() and "Reviews:" in element.get_text():
+                if "The Latest" in element.get_text().strip() and "Reviews:" in element.get_text().strip():
                     continue
 
-                if "More on" in element.get_text() and ":" in element.get_text():
+                if "More on" in element.get_text().strip() and ":" in element.get_text().strip():
                     continue
 
                 content = {
@@ -104,7 +107,7 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'h4':
-                if element.get_text() == "":
+                if element.get_text().strip() == "":
                     continue
 
                 if element.has_attr('class') and 'elementor-toc__header-title' in element['class']:
@@ -113,7 +116,7 @@ class Command(BaseCommand):
                 if element.has_attr('class') and 'elementor-cta__title' in element['class']:
                     continue
 
-                if 'Performance Scorecard' in element.get_text():
+                if 'Performance Scorecard' in element.get_text().strip():
                     continue
 
                 parent = element.parent
@@ -128,7 +131,7 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'p':
-                if element.get_text() == "":
+                if element.get_text().strip() == "":
                     continue
 
                 parent = element.parent
@@ -139,7 +142,7 @@ class Command(BaseCommand):
                     continue
 
                 span = element.find('span')
-                if span and span.get_text() == element.get_text():
+                if span and span.get_text().strip() == element.get_text().strip():
                     continue
 
                 childContents = ""
@@ -150,17 +153,17 @@ class Command(BaseCommand):
                                 'https://www.americanfirearms.org', '')
 
                             childContent = "<a href='{}'>{}</a>".format(
-                                link, child.get_text())
+                                link, child.get_text().strip())
 
                         elif child.name != None and len(child.find_all('a')) > 0:
                             link = child.find_all('a')[0].get('href').replace(
                                 'https://www.americanfirearms.org', '')
 
                             childContent = "<a href='{}'>{}</a>".format(
-                                link, child.find_all('a')[0].get_text())
+                                link, child.find_all('a')[0].get_text().strip())
 
                         else:
-                            childContent = child.get_text()
+                            childContent = child.get_text().strip()
 
                         childContents += childContent
                     except:
@@ -174,11 +177,11 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'span':
-                if element.get_text() == "":
+                if element.get_text().strip() == "":
                     continue
 
                 parent = element.parent
-                if parent.name != 'p' or parent.get_text() != element.get_text():
+                if parent.name != 'p' or parent.get_text().strip() != element.get_text().strip():
                     continue
 
                 childContents = ""
@@ -189,17 +192,17 @@ class Command(BaseCommand):
                                 'https://www.americanfirearms.org', '')
 
                             childContent = "<a href='{}'>{}</a>".format(
-                                link, child.get_text())
+                                link, child.get_text().strip())
 
                         if child.name != None and len(child.find_all('a')) > 0:
                             link = child.find_all('a')[0].get('href').replace(
                                 'https://www.americanfirearms.org', '')
 
                             childContent = "<a href='{}'>{}</a>".format(
-                                link, child.find_all('a')[0].get_text())
+                                link, child.find_all('a')[0].get_text().strip())
 
                         else:
-                            childContent = child.get_text()
+                            childContent = child.get_text().strip()
 
                         childContents += childContent
                     except:
@@ -372,7 +375,9 @@ class Command(BaseCommand):
                     liContents = ""
 
                     if child.name == None:
-                        liContents = child
+                        if child.get_text().strip() == "":
+                            continue
+                        liContents = child.get_text().strip()
                     else:
                         for grandchild in child.children:
                             try:
@@ -381,21 +386,23 @@ class Command(BaseCommand):
                                         'https://www.americanfirearms.org', '')
 
                                     liContent = "<a href='{}'>{}</a>".format(
-                                        link, grandchild.get_text())
+                                        link, grandchild.get_text().strip())
 
                                 elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
                                     link = grandchild.find_all('a')[0].get('href').replace(
                                         'https://www.americanfirearms.org', '')
 
                                     liContent = "<a href='{}'>{}</a>".format(
-                                        link, grandchild.find_all('a')[0].get_text())
+                                        link, grandchild.find_all('a')[0].get_text().strip())
 
                                 elif grandchild.name == 'strong':
                                     liContent = "<strong>{}</strong>".format(
-                                        grandchild.get_text())
+                                        grandchild.get_text().strip())
 
                                 else:
-                                    liContent = grandchild.get_text()
+                                    if grandchild.get_text().strip() == "":
+                                        continue
+                                    liContent = "<span>{}</span>".format(grandchild.get_text().strip())
                             except:
                                 continue
 
@@ -425,7 +432,9 @@ class Command(BaseCommand):
                     liContents = ""
 
                     if child.name == None:
-                        liContents = child
+                        if child.get_text().strip() == "":
+                            continue
+                        liContents = child.get_text().strip()
                     else:
                         for grandchild in child.children:
                             try:
@@ -434,21 +443,23 @@ class Command(BaseCommand):
                                         'https://www.americanfirearms.org', '')
 
                                     liContent = "<a href='{}'>{}</a>".format(
-                                        link, grandchild.get_text())
+                                        link, grandchild.get_text().strip())
 
                                 elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
                                     link = grandchild.find_all('a')[0].get('href').replace(
                                         'https://www.americanfirearms.org', '')
 
                                     liContent = "<a href='{}'>{}</a>".format(
-                                        link, grandchild.find_all('a')[0].get_text())
+                                        link, grandchild.find_all('a')[0].get_text().strip())
 
                                 elif grandchild.name == 'strong':
                                     liContent = "<strong>{}</strong>".format(
-                                        grandchild.get_text())
+                                        grandchild.get_text().strip())
 
                                 else:
-                                    liContent = grandchild.get_text()
+                                    if grandchild.get_text().strip() == "":
+                                        continue
+                                    liContent = "<span>{}</span>".format(grandchild.get_text().strip())
 
                                 liContents += liContent
                             except:
@@ -481,26 +492,26 @@ class Command(BaseCommand):
                         if len(td.find_all('a')) > 0:
                             link = td.find_all('a')[0].get('href').replace(
                                 'https://www.americanfirearms.org', '')
-                            name = td.find_all('a')[0].get_text()
+                            name = td.find_all('a')[0].get_text().strip()
 
                             data = "<a href='{}'>{}</a>".format(link, name)
 
                         elif len(td.find_all('img')) > 0:
                             if td.find_previous_sibling('td') != None:
-                                data = td.get_text()
+                                data = td.get_text().strip()
 
                             else:
                                 image = td.select('img')[0]['data-src']
                                 alt = td.select('img')[0]['alt'].strip()
                                 if alt == "":
-                                    alt = td.find_next_sibling('td').get_text()
+                                    alt = td.find_next_sibling('td').get_text().strip()
 
                                 data = "<img src='{}' alt='{}' />".format(
                                     image, alt)
                                 continue
 
                         else:
-                            data = td.get_text()
+                            data = td.get_text().strip()
                             if data == "Image":
                                 continue
 
@@ -544,27 +555,64 @@ class Command(BaseCommand):
             }
         }
 
+    def updateAuthor(self):
+        posts = Post.objects.all()
+        for post in posts:
+            oldAuthor = int(post.author)
+            newAuthor = 2
+            if oldAuthor == 10 or oldAuthor == 1:  # Michael
+                newAuthor = 2
+            if oldAuthor == 8:  # Patrick
+                newAuthor = 5
+            if oldAuthor == 7:  # Megan
+                newAuthor = 4
+            if oldAuthor == 4:  # Kenzie
+                newAuthor = 3
+
+            posts = requests.request(
+                "GET",
+                "https://firearms-wp.klikz.us/wp-json/wp/v2/posts?slug={}".format(
+                    post.slug)
+            )
+
+            if len(json.loads(posts.text)) > 0:
+                try:
+                    postId = json.loads(posts.text)[0]['id']
+                    print("Post: {} already exists. Id: {}".format(
+                        post.title, postId))
+
+                    response = requests.request(
+                        "PUT",
+                        "https://firearms-wp.klikz.us/wp-json/wp/v2/posts/{}".format(postId), headers=self.wpAuth(),
+                        data=json.dumps({"author": newAuthor})
+                    )
+                    postId = json.loads(response.text)['id']
+                    print("Updated Post {}".format(postId))
+                except Exception as e:
+                    print(e)
+                    print("Failed updating post")
+
     def main(self):
         # Getting Existing Post slugs
-        slugs = []
-        for i in range(1, 10):
-            wpPosts = requests.request(
-                "GET",
-                "https://firearms-wp.klikz.us/wp-json/wp/v2/posts?page={}&per_page=100".format(
-                    i)
-            )
-            if wpPosts.status_code != 200:
-                break
+        # slugs = []
+        # for i in range(1, 10):
+        #     wpPosts = requests.request(
+        #         "GET",
+        #         "https://firearms-wp.klikz.us/wp-json/wp/v2/posts?page={}&per_page=100".format(
+        #             i)
+        #     )
+        #     if wpPosts.status_code != 200:
+        #         break
 
-            for wpPost in json.loads(wpPosts.text):
-                print(wpPost['slug'])
-                slugs.append(wpPost['slug'])
+        #     for wpPost in json.loads(wpPosts.text):
+        #         print(wpPost['slug'])
+        #         slugs.append(wpPost['slug'])
 
         # Process All Posts
         posts = Post.objects.all()
 
         # Process a specifi post
-        # posts = Post.objects.filter(slug="gun-brands")
+        # posts = Post.objects.filter(slug="the-best-first-handguns-for-beginners-home-defense")
 
         for post in posts:
             print("--------------------------------------------------------")
@@ -575,9 +623,9 @@ class Command(BaseCommand):
             #################################
 
             # Skip existing posts
-            if post.slug in slugs:
-                print("Ignoring Post {}".format(post.slug))
-                continue
+            # if post.slug in slugs:
+            #     print("Ignoring Post {}".format(post.slug))
+            #     continue
             #################################
 
             print("Processing Post {}".format(post.slug))
@@ -633,86 +681,35 @@ class Command(BaseCommand):
             except Media.DoesNotExist:
                 featuredMediaId = 0
 
-            author = 4
-            if post.author == 10 or post.author == 1:  # Michael
-                author = 4
-            if post.author == 8:  # Patrick
-                author = 7
-            if post.author == 7:  # Megan
-                author = 6
-            if post.author == 4:  # Kenzie
-                author = 5
+            oldAuthor = int(post.author)
+            newAuthor = 2
+            if oldAuthor == 10 or oldAuthor == 1:  # Michael
+                newAuthor = 2
+            if oldAuthor == 8:  # Patrick
+                newAuthor = 5
+            if oldAuthor == 7:  # Megan
+                newAuthor = 4
+            if oldAuthor == 4:  # Kenzie
+                newAuthor = 3
 
             # Create Post
             postId = self.wpPost({
                 "slug": slug,
                 "title": title,
                 "status": "publish",
-                "acf": acf,
+                "fields": acf,
                 "date": date,
                 "categories": categories,
                 "tags": tags,
                 "featured_media": featuredMediaId,
                 "content": content,
-                "author": author
+                "author": newAuthor
             })
 
             print("Successfully Created a Post {}".format(postId))
 
-        # Process All Pages
-        # pages = Page.objects.all()
-
-        # Process a specifi post
-        # pages = Page.objects.filter(slug="guide-to-all-things-ar")
-
-        # for page in pages:
-        #     if page.slug == "guide-to-all-things-ar" or page.slug == "firearm-basics" or page.slug == "shotgun-reviews":
-        #         pass
-        #     else:
-        #         continue
-
-        #     print("--------------------------------------------------------")
-
-        #     print("Processing Page {}".format(page.slug))
-
-        #     title = html.unescape(page.title)
-        #     content = html.unescape(page.excerpt)
-        #     slug = page.slug
-        #     date = page.date
-
-        #     body = self.convertHTMLToPageACFJson(page.body)
-        #     acf = {
-        #         "content": body
-        #     }
-
-        #     # Thumbnail
-        #     try:
-        #         featured_media = Media.objects.get(id=page.featured_media)
-
-        #         mediaLink = featured_media.link
-        #         mediaAlt = featured_media.alt
-        #         if mediaAlt == "":
-        #             mediaAlt = title
-
-        #         featuredMediaId = self.wpMedia(mediaLink, mediaAlt)
-        #     except Media.DoesNotExist:
-        #         featuredMediaId = 0
-
-        #     # Create Page
-        #     pageId = self.wpPage({
-        #         "slug": slug,
-        #         "title": title,
-        #         "status": "publish",
-        #         "acf": acf,
-        #         "date": date,
-        #         "featured_media": featuredMediaId,
-        #         "content": content,
-        #     })
-
-        #     print("Successfully Created a Page {}".format(pageId))
-
     def wpAuth(self):
-        credentials = 'admin:CqDQ 7EPD vizZ s14b 5pEx vP6i'
+        credentials = 'murrell:TmOr Lh6z fjqh ZcGC GEEl yTfh'
         token = base64.b64encode(credentials.encode())
         headers = {
             'Authorization': 'Basic ' + token.decode('utf-8'),
@@ -722,7 +719,7 @@ class Command(BaseCommand):
         return headers
 
     def wpFileAuth(self):
-        credentials = 'admin:CqDQ 7EPD vizZ s14b 5pEx vP6i'
+        credentials = 'murrell:TmOr Lh6z fjqh ZcGC GEEl yTfh'
         token = base64.b64encode(credentials.encode())
         headers = {
             'Authorization': 'Basic ' + token.decode('utf-8')
@@ -829,7 +826,7 @@ class Command(BaseCommand):
                     data['title'], postId))
 
                 response = requests.request(
-                    "PUT",
+                    "POST",
                     "https://firearms-wp.klikz.us/wp-json/wp/v2/posts/{}".format(postId), headers=self.wpAuth(),
                     data=json.dumps(data)
                 )
