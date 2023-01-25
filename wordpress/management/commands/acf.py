@@ -76,7 +76,7 @@ class Command(BaseCommand):
         contents = []
         for element in elements:
             if element.name == 'h2':
-                if element.get_text().strip() == "":
+                if element.get_text() == "":
                     continue
 
                 content = {
@@ -87,16 +87,16 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'h3':
-                if element.get_text().strip() == "":
+                if element.get_text() == "":
                     continue
 
                 if element.has_attr('class') and 'elementor-cta__title' in element['class']:
                     continue
 
-                if "The Latest" in element.get_text().strip() and "Reviews:" in element.get_text().strip():
+                if "The Latest" in element.get_text() and "Reviews:" in element.get_text():
                     continue
 
-                if "More on" in element.get_text().strip() and ":" in element.get_text().strip():
+                if "More on" in element.get_text() and ":" in element.get_text():
                     continue
 
                 content = {
@@ -107,7 +107,7 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'h4':
-                if element.get_text().strip() == "":
+                if element.get_text() == "":
                     continue
 
                 if element.has_attr('class') and 'elementor-toc__header-title' in element['class']:
@@ -116,7 +116,7 @@ class Command(BaseCommand):
                 if element.has_attr('class') and 'elementor-cta__title' in element['class']:
                     continue
 
-                if 'Performance Scorecard' in element.get_text().strip():
+                if 'Performance Scorecard' in element.get_text():
                     continue
 
                 parent = element.parent
@@ -131,7 +131,7 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'p':
-                if element.get_text().strip() == "":
+                if element.get_text() == "":
                     continue
 
                 parent = element.parent
@@ -142,7 +142,7 @@ class Command(BaseCommand):
                     continue
 
                 span = element.find('span')
-                if span and span.get_text().strip() == element.get_text().strip():
+                if span and span.get_text() == element.get_text():
                     continue
 
                 childContents = ""
@@ -153,17 +153,17 @@ class Command(BaseCommand):
                                 'https://www.americanfirearms.org', '')
 
                             childContent = "<a href='{}'>{}</a>".format(
-                                link, child.get_text().strip())
+                                link, child.get_text())
 
                         elif child.name != None and len(child.find_all('a')) > 0:
                             link = child.find_all('a')[0].get('href').replace(
                                 'https://www.americanfirearms.org', '')
 
                             childContent = "<a href='{}'>{}</a>".format(
-                                link, child.find_all('a')[0].get_text().strip())
+                                link, child.find_all('a')[0].get_text())
 
                         else:
-                            childContent = child.get_text().strip()
+                            childContent = child.get_text()
 
                         childContents += childContent
                     except:
@@ -177,11 +177,11 @@ class Command(BaseCommand):
                 contents.append(content)
 
             if element.name == 'span':
-                if element.get_text().strip() == "":
+                if element.get_text() == "":
                     continue
 
                 parent = element.parent
-                if parent.name != 'p' or parent.get_text().strip() != element.get_text().strip():
+                if parent.name != 'p' or parent.get_text() != element.get_text():
                     continue
 
                 childContents = ""
@@ -192,17 +192,17 @@ class Command(BaseCommand):
                                 'https://www.americanfirearms.org', '')
 
                             childContent = "<a href='{}'>{}</a>".format(
-                                link, child.get_text().strip())
+                                link, child.get_text())
 
                         if child.name != None and len(child.find_all('a')) > 0:
                             link = child.find_all('a')[0].get('href').replace(
                                 'https://www.americanfirearms.org', '')
 
                             childContent = "<a href='{}'>{}</a>".format(
-                                link, child.find_all('a')[0].get_text().strip())
+                                link, child.find_all('a')[0].get_text())
 
                         else:
-                            childContent = child.get_text().strip()
+                            childContent = child.get_text()
 
                         childContents += childContent
                     except:
@@ -377,7 +377,7 @@ class Command(BaseCommand):
                     if child.name == None:
                         if child.get_text().strip() == "":
                             continue
-                        liContents = child.get_text().strip()
+                        liContents = child
                     else:
                         for grandchild in child.children:
                             try:
@@ -386,23 +386,21 @@ class Command(BaseCommand):
                                         'https://www.americanfirearms.org', '')
 
                                     liContent = "<a href='{}'>{}</a>".format(
-                                        link, grandchild.get_text().strip())
+                                        link, grandchild.get_text())
 
                                 elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
                                     link = grandchild.find_all('a')[0].get('href').replace(
                                         'https://www.americanfirearms.org', '')
 
                                     liContent = "<a href='{}'>{}</a>".format(
-                                        link, grandchild.find_all('a')[0].get_text().strip())
+                                        link, grandchild.find_all('a')[0].get_text())
 
                                 elif grandchild.name == 'strong':
                                     liContent = "<strong>{}</strong>".format(
-                                        grandchild.get_text().strip())
+                                        grandchild.get_text())
 
                                 else:
-                                    if grandchild.get_text().strip() == "":
-                                        continue
-                                    liContent = "<span>{}</span>".format(grandchild.get_text().strip())
+                                    liContent = grandchild.get_text()
                             except:
                                 continue
 
@@ -434,7 +432,7 @@ class Command(BaseCommand):
                     if child.name == None:
                         if child.get_text().strip() == "":
                             continue
-                        liContents = child.get_text().strip()
+                        liContents = child
                     else:
                         for grandchild in child.children:
                             try:
@@ -443,23 +441,21 @@ class Command(BaseCommand):
                                         'https://www.americanfirearms.org', '')
 
                                     liContent = "<a href='{}'>{}</a>".format(
-                                        link, grandchild.get_text().strip())
+                                        link, grandchild.get_text())
 
                                 elif grandchild.name != None and len(grandchild.find_all('a')) > 0:
                                     link = grandchild.find_all('a')[0].get('href').replace(
                                         'https://www.americanfirearms.org', '')
 
                                     liContent = "<a href='{}'>{}</a>".format(
-                                        link, grandchild.find_all('a')[0].get_text().strip())
+                                        link, grandchild.find_all('a')[0].get_text())
 
                                 elif grandchild.name == 'strong':
                                     liContent = "<strong>{}</strong>".format(
-                                        grandchild.get_text().strip())
+                                        grandchild.get_text())
 
                                 else:
-                                    if grandchild.get_text().strip() == "":
-                                        continue
-                                    liContent = "<span>{}</span>".format(grandchild.get_text().strip())
+                                    liContent = grandchild.get_text()
 
                                 liContents += liContent
                             except:
@@ -492,26 +488,26 @@ class Command(BaseCommand):
                         if len(td.find_all('a')) > 0:
                             link = td.find_all('a')[0].get('href').replace(
                                 'https://www.americanfirearms.org', '')
-                            name = td.find_all('a')[0].get_text().strip()
+                            name = td.find_all('a')[0].get_text()
 
                             data = "<a href='{}'>{}</a>".format(link, name)
 
                         elif len(td.find_all('img')) > 0:
                             if td.find_previous_sibling('td') != None:
-                                data = td.get_text().strip()
+                                data = td.get_text()
 
                             else:
                                 image = td.select('img')[0]['data-src']
                                 alt = td.select('img')[0]['alt'].strip()
                                 if alt == "":
-                                    alt = td.find_next_sibling('td').get_text().strip()
+                                    alt = td.find_next_sibling('td').get_text()
 
                                 data = "<img src='{}' alt='{}' />".format(
                                     image, alt)
                                 continue
 
                         else:
-                            data = td.get_text().strip()
+                            data = td.get_text()
                             if data == "Image":
                                 continue
 
@@ -826,7 +822,7 @@ class Command(BaseCommand):
                     data['title'], postId))
 
                 response = requests.request(
-                    "POST",
+                    "PUT",
                     "https://firearms-wp.klikz.us/wp-json/wp/v2/posts/{}".format(postId), headers=self.wpAuth(),
                     data=json.dumps(data)
                 )
