@@ -319,8 +319,9 @@ class Command(BaseCommand):
 
                             score = rating.select(
                                 '.elementor-star-rating')[0]['title']
+                            score = float(str(score).split("/")[0])
 
-                            tableData.append({performance: performance, score: score})
+                            tableData.append({"performance": performance, "score": score})
                     except Exception as e:
                         print(e)
                         continue
